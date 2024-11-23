@@ -1,7 +1,9 @@
 import { Star, ThumbsUp, MessageSquare } from "lucide-react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface BacklinkCardProps {
+  id: string;
   title: string;
   domain: string;
   da: number;
@@ -13,6 +15,7 @@ interface BacklinkCardProps {
 }
 
 const BacklinkCard = ({
+  id,
   title,
   domain,
   da,
@@ -22,6 +25,8 @@ const BacklinkCard = ({
   reviews,
   isSponsored = false,
 }: BacklinkCardProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className={`bg-card rounded-lg border p-6 transition-all duration-200 hover:shadow-lg animate-fade-in ${isSponsored ? 'border-primary/20' : ''}`}>
       {isSponsored && (
@@ -66,7 +71,9 @@ const BacklinkCard = ({
             Review
           </Button>
         </div>
-        <Button>View Details</Button>
+        <Button onClick={() => navigate(`/product/${id}`)}>
+          View Details
+        </Button>
       </div>
     </div>
   );
