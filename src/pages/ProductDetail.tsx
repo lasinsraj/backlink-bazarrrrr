@@ -152,7 +152,7 @@ const ProductDetail = () => {
         <div className="space-y-6">
           <div className="relative h-96 rounded-lg overflow-hidden">
             <img 
-              src={product.image || "https://source.unsplash.com/random/800x600?product"} 
+              src="/placeholder.svg"
               alt={product.title}
               className="w-full h-full object-cover"
             />
