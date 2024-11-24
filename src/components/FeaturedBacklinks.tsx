@@ -3,7 +3,7 @@ import BacklinkCard from "./BacklinkCard";
 const FeaturedBacklinks = () => {
   const backlinks = [
     {
-      id: "1",
+      id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       title: "Increase Domain Rating Package",
       domain: "premium-backlinks.com",
       da: 85,
@@ -16,7 +16,7 @@ const FeaturedBacklinks = () => {
       isSponsored: true,
     },
     {
-      id: "2",
+      id: "550e8400-e29b-41d4-a716-446655440000",
       title: "Domain Authority Booster",
       domain: "seo-authority.com",
       da: 80,
@@ -28,7 +28,7 @@ const FeaturedBacklinks = () => {
       image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
     },
     {
-      id: "3",
+      id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
       title: "2,500 Keyword Targeted Backlinks",
       domain: "link-builder.com",
       da: 75,
@@ -40,7 +40,7 @@ const FeaturedBacklinks = () => {
       image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
     },
     {
-      id: "4",
+      id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
       title: "5,000 Keyword Targeted Backlinks",
       domain: "seo-master.com",
       da: 82,
@@ -52,7 +52,7 @@ const FeaturedBacklinks = () => {
       image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
     },
     {
-      id: "5",
+      id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
       title: "15,000 Keyword Targeted Backlinks",
       domain: "enterprise-seo.com",
       da: 88,
@@ -66,16 +66,18 @@ const FeaturedBacklinks = () => {
   ];
 
   return (
-    <div className="py-12 bg-slate-50">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">Featured Backlinks</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {backlinks.map((backlink) => (
-            <BacklinkCard key={backlink.id} {...backlink} />
+    <section className="py-16 px-4">
+      <div className="container mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-12">
+          Featured Backlink Packages
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {backlinks.map((backlink, index) => (
+            <BacklinkCard key={index} {...backlink} />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
