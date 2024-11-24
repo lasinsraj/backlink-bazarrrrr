@@ -11,6 +11,8 @@ interface BacklinkCardProps {
   price: number;
   rating: number;
   reviews: number;
+  description: string;
+  image: string;
   isSponsored?: boolean;
 }
 
@@ -23,6 +25,8 @@ const BacklinkCard = ({
   price,
   rating,
   reviews,
+  description,
+  image,
   isSponsored = false,
 }: BacklinkCardProps) => {
   const navigate = useNavigate();
@@ -35,8 +39,17 @@ const BacklinkCard = ({
         </div>
       )}
       
+      <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
+        <img 
+          src={image} 
+          alt={title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-slate-600 mb-4">{domain}</p>
+      <p className="text-sm text-slate-600 mb-2">{domain}</p>
+      <p className="text-sm text-slate-600 mb-4 line-clamp-2">{description}</p>
       
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="text-center p-2 bg-slate-50 rounded">
