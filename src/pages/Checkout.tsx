@@ -29,7 +29,7 @@ const Checkout = () => {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, skipDetails = false) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -50,8 +50,8 @@ const Checkout = () => {
     const { error } = await supabase.from("orders").insert({
       product_id: id,
       user_id: session.user.id,
-      keywords,
-      target_url: targetUrl,
+      keywords: skipDetails ? null : keywords,
+      target_url: skipDetails ? null : targetUrl,
     });
 
     setIsSubmitting(false);
@@ -95,7 +95,7 @@ const Checkout = () => {
           <div className="text-xl font-bold text-primary">${product.price}</div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-2">
               Target Keywords
@@ -104,7 +104,6 @@ const Checkout = () => {
               value={keywords}
               onChange={(e) => setKeywords(e.target.value)}
               placeholder="Enter your target keywords"
-              required
             />
           </div>
 
@@ -117,20 +116,29 @@ const Checkout = () => {
               onChange={(e) => setTargetUrl(e.target.value)}
               placeholder="Enter your target URL"
               type="url"
-              required
             />
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Complete Purchase
-          </Button>
+          <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Complete Purchase
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={(e) => handleSubmit(e, true)}
+              disabled={isSubmitting}
+            >
+              Add Details Later
+            </Button>
+          </div>
         </form>
       </div>
     </div>
