@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Account from "./pages/Account";
 import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
 
@@ -32,7 +33,7 @@ const AppRoutes = () => {
   const { session } = useSessionContext();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1">
         <Routes>
@@ -49,6 +50,14 @@ const AppRoutes = () => {
                 <Checkout />
               </ProtectedRoute>
             } 
+          />
+          <Route
+            path="/account/:section?"
+            element={
+              <ProtectedRoute>
+                <Account />
+              </ProtectedRoute>
+            }
           />
         </Routes>
       </main>

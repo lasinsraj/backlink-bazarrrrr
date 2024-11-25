@@ -22,14 +22,14 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "#E8F6F7",
+        foreground: "#1A2B33",
         primary: {
-          DEFAULT: "#6366F1",
+          DEFAULT: "#2A9D8F",
           foreground: "#FFFFFF",
         },
         secondary: {
-          DEFAULT: "#60A5FA",
+          DEFAULT: "#264653",
           foreground: "#FFFFFF",
         },
         success: {
@@ -41,21 +41,25 @@ export default {
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#E0E7E9",
+          foreground: "#547B7E",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#E9C46A",
+          foreground: "#264653",
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#FFFFFF",
+          foreground: "#1A2B33",
         },
         card: {
-          DEFAULT: "#F8FAFC",
-          foreground: "#1E293B",
+          DEFAULT: "#FFFFFF",
+          foreground: "#1A2B33",
         },
+      },
+      backgroundImage: {
+        'gradient-app': 'linear-gradient(135deg, #2A9D8F 0%, #264653 100%)',
+        'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
       },
       keyframes: {
         "accordion-down": {
