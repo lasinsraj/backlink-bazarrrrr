@@ -1,27 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Bell } from "lucide-react";
 import { Button } from "./ui/button";
+import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
 
 const Header = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoggedIn(!!session);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { session } = useSessionContext();
 
   const handleAuthClick = async () => {
-    if (isLoggedIn) {
+    if (session) {
       await supabase.auth.signOut();
       navigate("/");
     } else {
@@ -57,7 +45,7 @@ const Header = () => {
               <Bell className="h-5 w-5" />
             </Button>
             <Button onClick={handleAuthClick}>
-              {isLoggedIn ? "Sign Out" : "Sign In"}
+              {session ? "Sign Out" : "Sign In"}
             </Button>
           </div>
         </div>
