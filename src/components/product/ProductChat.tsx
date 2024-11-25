@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send } from "lucide-react";
+import { Send, MessageCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionContext } from "@supabase/auth-helpers-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface ProductChatProps {
   productId: string;
@@ -15,8 +22,11 @@ const ProductChat = ({ productId }: ProductChatProps) => {
   const [messages, setMessages] = useState([]);
   const { session } = useSessionContext();
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (!open) return;
+
     const fetchMessages = async () => {
       const { data, error } = await supabase
         .from("messages")
@@ -56,7 +66,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [productId, toast]);
+  }, [productId, toast, open]);
 
   const handleSendMessage = async () => {
     if (!session) {
@@ -89,36 +99,46 @@ const ProductChat = ({ productId }: ProductChatProps) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
-      <h2 className="text-2xl font-semibold mb-4">Chat with Seller</h2>
-      <div className="bg-gray-50 p-4 rounded-lg h-96 flex flex-col">
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`p-3 rounded-lg max-w-[80%] ${
-                msg.sender_id === session?.user?.id
-                  ? "ml-auto bg-primary text-white"
-                  : "bg-white border"
-              }`}
-            >
-              {msg.content}
-            </div>
-          ))}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="gap-2">
+          <MessageCircle className="h-4 w-4" />
+          Chat with Seller
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Chat with Seller</DialogTitle>
+        </DialogHeader>
+        <div className="bg-gray-50 p-4 rounded-lg h-[400px] flex flex-col">
+          <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`p-3 rounded-lg max-w-[80%] ${
+                  msg.sender_id === session?.user?.id
+                    ? "ml-auto bg-primary text-white"
+                    : "bg-white border"
+                }`}
+              >
+                {msg.content}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your message..."
+              className="resize-none"
+            />
+            <Button onClick={handleSendMessage}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="resize-none"
-          />
-          <Button onClick={handleSendMessage}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
