@@ -11,7 +11,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
+
+interface Message {
+  id: string;
+  content: string;
+  sender_id: string;
+  created_at: string;
+}
 
 interface ProductChatProps {
   productId: string;
@@ -19,31 +27,37 @@ interface ProductChatProps {
 
 const ProductChat = ({ productId }: ProductChatProps) => {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { session } = useSessionContext();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const fetchMessages = async () => {
+  const fetchMessages = async () => {
+    try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from("messages")
         .select("*")
         .eq("product_id", productId)
         .order("created_at", { ascending: true });
       
-      if (error) {
-        toast({
-          title: "Error fetching messages",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
+      if (error) throw error;
+      
       setMessages(data || []);
-    };
+    } catch (error: any) {
+      toast({
+        title: "Error fetching messages",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
 
     fetchMessages();
 
@@ -58,7 +72,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
           filter: `product_id=eq.${productId}`,
         },
         (payload) => {
-          setMessages((current) => [...current, payload.new]);
+          setMessages((current) => [...current, payload.new as Message]);
         }
       )
       .subscribe();
@@ -66,7 +80,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [productId, toast, open]);
+  }, [productId, open]);
 
   const handleSendMessage = async () => {
     if (!session) {
@@ -80,22 +94,23 @@ const ProductChat = ({ productId }: ProductChatProps) => {
 
     if (!message.trim()) return;
 
-    const { error } = await supabase.from("messages").insert({
-      content: message,
-      product_id: productId,
-      sender_id: session.user.id,
-    });
+    try {
+      const { error } = await supabase.from("messages").insert({
+        content: message.trim(),
+        product_id: productId,
+        sender_id: session.user.id,
+      });
 
-    if (error) {
+      if (error) throw error;
+
+      setMessage("");
+    } catch (error: any) {
       toast({
         title: "Error sending message",
         description: error.message,
         variant: "destructive",
       });
-      return;
     }
-
-    setMessage("");
   };
 
   return (
@@ -109,21 +124,34 @@ const ProductChat = ({ productId }: ProductChatProps) => {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Chat with Seller</DialogTitle>
+          <DialogDescription>
+            Send messages to discuss details about this product
+          </DialogDescription>
         </DialogHeader>
         <div className="bg-gray-50 p-4 rounded-lg h-[400px] flex flex-col">
           <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`p-3 rounded-lg max-w-[80%] ${
-                  msg.sender_id === session?.user?.id
-                    ? "ml-auto bg-primary text-white"
-                    : "bg-white border"
-                }`}
-              >
-                {msg.content}
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="text-sm text-gray-500">Loading messages...</span>
               </div>
-            ))}
+            ) : messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <span className="text-sm text-gray-500">No messages yet</span>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`p-3 rounded-lg max-w-[80%] ${
+                    msg.sender_id === session?.user?.id
+                      ? "ml-auto bg-primary text-white"
+                      : "bg-white border"
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              ))
+            )}
           </div>
           <div className="flex gap-2">
             <Textarea
@@ -131,8 +159,14 @@ const ProductChat = ({ productId }: ProductChatProps) => {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Type your message..."
               className="resize-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
             />
-            <Button onClick={handleSendMessage}>
+            <Button onClick={handleSendMessage} disabled={!message.trim()}>
               <Send className="h-4 w-4" />
             </Button>
           </div>
