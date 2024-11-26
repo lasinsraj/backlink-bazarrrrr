@@ -29,24 +29,21 @@ const Payment = () => {
   const handlePayment = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
           orderId: orderId,
           productId: order?.products?.id,
           price: order?.products?.price,
-        }),
+        },
       });
 
-      const session = await response.json();
+      if (error) throw error;
 
-      if (session.url) {
-        window.location.href = session.url;
+      if (data?.url) {
+        window.location.href = data.url;
       }
     } catch (error: any) {
+      console.error('Payment error:', error);
       toast({
         title: "Error",
         description: "Failed to initiate payment",
