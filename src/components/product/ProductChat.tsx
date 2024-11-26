@@ -33,11 +33,17 @@ const ProductChat = ({ productId }: ProductChatProps) => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    fetchMessages();
-    setupRealtimeSubscription();
+    let channel: ReturnType<typeof supabase.channel>;
+
+    if (open) {
+      fetchMessages();
+      channel = setupRealtimeSubscription();
+    }
+
     return () => {
-      cleanupRealtimeSubscription();
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [productId, open]);
 
@@ -64,7 +70,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
   };
 
   const setupRealtimeSubscription = () => {
-    const channel = supabase
+    return supabase
       .channel(`product-${productId}`)
       .on(
         "postgres_changes",
@@ -79,14 +85,6 @@ const ProductChat = ({ productId }: ProductChatProps) => {
         }
       )
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
-  const cleanupRealtimeSubscription = () => {
-    supabase.removeChannel(`product-${productId}`);
   };
 
   const handleSendMessage = async () => {

@@ -46,8 +46,10 @@ export type Database = {
           created_at: string
           id: string
           keywords: string | null
+          payment_status: string
           product_id: string
           status: string
+          stripe_session_id: string | null
           target_url: string | null
           user_id: string
         }
@@ -55,8 +57,10 @@ export type Database = {
           created_at?: string
           id?: string
           keywords?: string | null
+          payment_status?: string
           product_id: string
           status?: string
+          stripe_session_id?: string | null
           target_url?: string | null
           user_id: string
         }
@@ -64,8 +68,10 @@ export type Database = {
           created_at?: string
           id?: string
           keywords?: string | null
+          payment_status?: string
           product_id?: string
           status?: string
+          stripe_session_id?: string | null
           target_url?: string | null
           user_id?: string
         }
