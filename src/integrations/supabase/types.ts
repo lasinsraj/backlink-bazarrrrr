@@ -118,6 +118,24 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_admin: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          is_admin?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
