@@ -67,8 +67,8 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
       <SessionContextProvider 
         supabaseClient={supabase}
         initialSession={null}
@@ -79,8 +79,8 @@ const App = () => (
           <AppRoutes />
         </TooltipProvider>
       </SessionContextProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+    </BrowserRouter>
+  </QueryClientProvider>
 );
 
 export default App;
