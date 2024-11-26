@@ -73,11 +73,13 @@ const App = () => (
         supabaseClient={supabase}
         initialSession={null}
       >
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AppRoutes />
-        </TooltipProvider>
+        <React.StrictMode>
+          <TooltipProvider>
+            <AppRoutes />
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </React.StrictMode>
       </SessionContextProvider>
     </QueryClientProvider>
   </BrowserRouter>
