@@ -68,18 +68,18 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <SessionContextProvider 
-        supabaseClient={supabase}
-        initialSession={null}
-      >
-        <TooltipProvider>
+    <TooltipProvider>
+      <BrowserRouter>
+        <SessionContextProvider 
+          supabaseClient={supabase}
+          initialSession={null}
+        >
           <Toaster />
           <Sonner />
           <AppRoutes />
-        </TooltipProvider>
-      </SessionContextProvider>
-    </BrowserRouter>
+        </SessionContextProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
