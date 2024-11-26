@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -66,8 +67,8 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => (
-  <React.StrictMode>
+const App = () => {
+  return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <SessionContextProvider 
@@ -82,7 +83,7 @@ const App = () => (
         </SessionContextProvider>
       </QueryClientProvider>
     </BrowserRouter>
-  </React.StrictMode>
-);
+  );
+};
 
 export default App;
