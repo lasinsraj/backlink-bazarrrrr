@@ -67,22 +67,22 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <SessionContextProvider 
-        supabaseClient={supabase}
-        initialSession={null}
-      >
-        <React.StrictMode>
+  <React.StrictMode>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <SessionContextProvider 
+          supabaseClient={supabase}
+          initialSession={null}
+        >
           <TooltipProvider>
             <AppRoutes />
             <Toaster />
             <Sonner />
           </TooltipProvider>
-        </React.StrictMode>
-      </SessionContextProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+        </SessionContextProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 );
 
 export default App;
