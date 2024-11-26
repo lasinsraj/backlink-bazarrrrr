@@ -47,29 +47,32 @@ const Checkout = () => {
       return;
     }
 
-    const { error } = await supabase.from("orders").insert({
-      product_id: id,
-      user_id: session.user.id,
-      keywords: skipDetails ? null : keywords,
-      target_url: skipDetails ? null : targetUrl,
-    });
+    try {
+      const { data, error } = await supabase.from("orders").insert({
+        product_id: id,
+        user_id: session.user.id,
+        keywords: skipDetails ? null : keywords,
+        target_url: skipDetails ? null : targetUrl,
+      }).select().single();
 
-    setIsSubmitting(false);
+      if (error) throw error;
 
-    if (error) {
+      toast({
+        title: "Success",
+        description: "Your order has been created",
+      });
+      
+      // Redirect to payment page with the order ID
+      navigate(`/payment/${data.id}`);
+    } catch (error: any) {
       toast({
         title: "Error",
         description: "There was an error processing your order",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    toast({
-      title: "Success",
-      description: "Your order has been placed successfully",
-    });
-    navigate("/");
   };
 
   if (isLoading) {
@@ -128,7 +131,7 @@ const Checkout = () => {
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              Complete Purchase
+              Continue to Payment
             </Button>
             <Button
               type="button"

@@ -32,6 +32,15 @@ const ProductChat = ({ productId }: ProductChatProps) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    fetchMessages();
+    setupRealtimeSubscription();
+    return () => {
+      cleanupRealtimeSubscription();
+    };
+  }, [productId, open]);
+
   const fetchMessages = async () => {
     try {
       setIsLoading(true);
@@ -42,7 +51,6 @@ const ProductChat = ({ productId }: ProductChatProps) => {
         .order("created_at", { ascending: true });
       
       if (error) throw error;
-      
       setMessages(data || []);
     } catch (error: any) {
       toast({
@@ -55,11 +63,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
     }
   };
 
-  useEffect(() => {
-    if (!open) return;
-
-    fetchMessages();
-
+  const setupRealtimeSubscription = () => {
     const channel = supabase
       .channel(`product-${productId}`)
       .on(
@@ -79,7 +83,11 @@ const ProductChat = ({ productId }: ProductChatProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [productId, open]);
+  };
+
+  const cleanupRealtimeSubscription = () => {
+    supabase.removeChannel(`product-${productId}`);
+  };
 
   const handleSendMessage = async () => {
     if (!session) {
@@ -101,7 +109,6 @@ const ProductChat = ({ productId }: ProductChatProps) => {
       });
 
       if (error) throw error;
-
       setMessage("");
     } catch (error: any) {
       toast({
@@ -120,8 +127,8 @@ const ProductChat = ({ productId }: ProductChatProps) => {
           Chat with Seller
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] h-[80vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="w-full max-w-[95vw] md:max-w-[500px] h-[90vh] md:h-[80vh] flex flex-col p-0">
+        <DialogHeader className="p-4 border-b">
           <DialogTitle>Chat with Seller</DialogTitle>
         </DialogHeader>
         <div className="flex-1 overflow-hidden flex flex-col">
@@ -149,7 +156,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
               ))
             )}
           </div>
-          <div className="p-4 border-t">
+          <div className="p-4 border-t mt-auto">
             <div className="flex gap-2">
               <Textarea
                 value={message}

@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import Account from "./pages/Account";
 import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
+import Payment from "./pages/Payment";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <Checkout />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/payment/:orderId" 
+            element={
+              <ProtectedRoute>
+                <Payment />
               </ProtectedRoute>
             } 
           />
