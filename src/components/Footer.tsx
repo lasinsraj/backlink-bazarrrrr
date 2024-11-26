@@ -17,17 +17,17 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-slate-600 hover:text-primary">
+                <Link to="/" className="text-slate-600 hover:text-primary transition-colors">
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/category/keyword-rank" className="text-slate-600 hover:text-primary">
+                <Link to="/category/keyword-rank" className="text-slate-600 hover:text-primary transition-colors">
                   Keyword Rank
                 </Link>
               </li>
               <li>
-                <Link to="/category/blog-comments" className="text-slate-600 hover:text-primary">
+                <Link to="/category/blog-comments" className="text-slate-600 hover:text-primary transition-colors">
                   Blog Comments
                 </Link>
               </li>
@@ -38,17 +38,17 @@ const Footer = () => {
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/faq" className="text-slate-600 hover:text-primary">
+                <Link to="/faq" className="text-slate-600 hover:text-primary transition-colors">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-slate-600 hover:text-primary">
+                <Link to="/contact" className="text-slate-600 hover:text-primary transition-colors">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-slate-600 hover:text-primary">
+                <Link to="/terms" className="text-slate-600 hover:text-primary transition-colors">
                   Terms of Service
                 </Link>
               </li>
@@ -58,16 +58,40 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Connect With Us</h4>
             <div className="flex space-x-4">
-              <a href="#" className="text-slate-600 hover:text-primary">
+              <a 
+                href="#" 
+                className="text-slate-600 hover:text-primary transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open('https://facebook.com', '_blank');
+                }}
+              >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-slate-600 hover:text-primary">
+              <a 
+                href="#" 
+                className="text-slate-600 hover:text-primary transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open('https://twitter.com', '_blank');
+                }}
+              >
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-slate-600 hover:text-primary">
+              <a 
+                href="#" 
+                className="text-slate-600 hover:text-primary transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.open('https://instagram.com', '_blank');
+                }}
+              >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-slate-600 hover:text-primary">
+              <a 
+                href="mailto:contact@backlinkbazaar.com" 
+                className="text-slate-600 hover:text-primary transition-colors"
+              >
                 <Mail className="h-5 w-5" />
               </a>
             </div>

@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogDescription,
 } from "@/components/ui/dialog";
 
 interface Message {
@@ -121,15 +120,12 @@ const ProductChat = ({ productId }: ProductChatProps) => {
           Chat with Seller
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Chat with Seller</DialogTitle>
-          <DialogDescription>
-            Send messages to discuss details about this product
-          </DialogDescription>
         </DialogHeader>
-        <div className="bg-gray-50 p-4 rounded-lg h-[400px] flex flex-col">
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <span className="text-sm text-gray-500">Loading messages...</span>
@@ -153,22 +149,24 @@ const ProductChat = ({ productId }: ProductChatProps) => {
               ))
             )}
           </div>
-          <div className="flex gap-2">
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="resize-none"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-            />
-            <Button onClick={handleSendMessage} disabled={!message.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
+          <div className="p-4 border-t">
+            <div className="flex gap-2">
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type your message..."
+                className="resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+              />
+              <Button onClick={handleSendMessage} disabled={!message.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

@@ -9,18 +9,34 @@ import {
 } from "./ui/dropdown-menu";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { Dialog, DialogContent } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { useToast } from "./ui/use-toast";
 
 const Header = () => {
   const navigate = useNavigate();
   const { session } = useSessionContext();
+  const { toast } = useToast();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
 
+  const handleSearch = (query: string) => {
+    // Implement search functionality
+    toast({
+      title: "Search",
+      description: `Searching for: ${query}`,
+    });
+    setSearchOpen(false);
+  };
+
   return (
-    <header className="bg-gradient-app text-white">
+    <header className="bg-gradient-app text-white sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold">
@@ -40,10 +56,21 @@ const Header = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="text-white">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-white"
+              onClick={() => setSearchOpen(true)}
+            >
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-white">
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-white"
+              onClick={() => setNotificationsOpen(true)}
+            >
               <Bell className="h-5 w-5" />
             </Button>
             
@@ -54,7 +81,7 @@ const Header = () => {
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem onSelect={() => navigate("/account/profile")}>
                     Profile
                   </DropdownMenuItem>
@@ -77,6 +104,35 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* Search Dialog */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <div className="grid gap-4">
+            <h2 className="text-lg font-semibold">Search</h2>
+            <Input
+              placeholder="Search backlinks..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch(e.currentTarget.value);
+                }
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notifications Dialog */}
+      <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <div className="grid gap-4">
+            <h2 className="text-lg font-semibold">Notifications</h2>
+            <div className="text-center text-gray-500 py-4">
+              No new notifications
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };
