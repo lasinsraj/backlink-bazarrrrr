@@ -13,7 +13,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -21,9 +20,9 @@ serve(async (req) => {
   try {
     const { orderId, productId, price } = await req.json()
 
-    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
+      billing_address_collection: 'required',
       line_items: [
         {
           price_data: {
@@ -31,7 +30,7 @@ serve(async (req) => {
             product_data: {
               name: 'Order #' + orderId,
             },
-            unit_amount: Math.round(price * 100), // Convert to cents
+            unit_amount: Math.round(price * 100),
           },
           quantity: 1,
         },
@@ -44,7 +43,6 @@ serve(async (req) => {
       },
     })
 
-    // Update order with Stripe session ID
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''

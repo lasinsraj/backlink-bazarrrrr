@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, CreditCard } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const Payment = () => {
   const { orderId } = useParams();
@@ -41,12 +42,14 @@ const Payment = () => {
 
       if (data?.url) {
         window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
       }
     } catch (error: any) {
       console.error('Payment error:', error);
       toast({
         title: "Error",
-        description: "Failed to initiate payment",
+        description: "Failed to initiate payment. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -63,31 +66,56 @@ const Payment = () => {
   }
 
   if (!order) {
-    return <div>Order not found</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">Order not found</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold mb-6">Complete Payment</h1>
-        
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">{order.products?.title}</h2>
-          <p className="text-gray-600 mb-2">{order.products?.description}</p>
-          <div className="text-xl font-bold text-primary">${order.products?.price}</div>
-        </div>
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl">Complete Payment</CardTitle>
+          <CardDescription>
+            {order.products?.description}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">{order.products?.title}</h2>
+            <p className="text-gray-600 mb-4">{order.products?.description}</p>
+            <div className="text-2xl font-bold text-primary">${order.products?.price}</div>
+          </div>
 
-        <Button
-          onClick={handlePayment}
-          className="w-full"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : null}
-          Proceed to Payment
-        </Button>
-      </div>
+          <div className="space-y-2">
+            {order.keywords && (
+              <p className="text-sm text-gray-600">Keywords: {order.keywords}</p>
+            )}
+            {order.target_url && (
+              <p className="text-sm text-gray-600">Target URL: {order.target_url}</p>
+            )}
+          </div>
+
+          <Button
+            onClick={handlePayment}
+            className="w-full h-12 text-lg"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            ) : (
+              <CreditCard className="h-5 w-5 mr-2" />
+            )}
+            Proceed to Payment
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
