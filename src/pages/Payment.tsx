@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, CreditCard } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Payment = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { data: order, isLoading: orderLoading } = useQuery({
     queryKey: ["order", orderId],
@@ -29,6 +31,8 @@ const Payment = () => {
 
   const handlePayment = async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
@@ -38,7 +42,9 @@ const Payment = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       if (data?.url) {
         window.location.href = data.url;
@@ -47,6 +53,7 @@ const Payment = () => {
       }
     } catch (error: any) {
       console.error('Payment error:', error);
+      setError(error.message || 'Failed to initiate payment. Please try again.');
       toast({
         title: "Error",
         description: "Failed to initiate payment. Please try again.",
@@ -101,6 +108,12 @@ const Payment = () => {
               <p className="text-sm text-gray-600">Target URL: {order.target_url}</p>
             )}
           </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
           <Button
             onClick={handlePayment}

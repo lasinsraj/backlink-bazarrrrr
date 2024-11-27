@@ -9,20 +9,25 @@ const corsHeaders = {
 
 const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
 if (!stripeKey) {
-  throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
+  console.error('STRIPE_SECRET_KEY is not set in environment variables')
 }
 
-const stripe = new Stripe(stripeKey, {
+const stripe = new Stripe(stripeKey || '', {
   apiVersion: '2022-11-15',
   httpClient: Stripe.createFetchHttpClient(),
 })
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    if (!stripeKey) {
+      throw new Error('Stripe secret key is not configured')
+    }
+
     const { orderId, productId, price } = await req.json()
     
     if (!orderId || !productId || !price) {
@@ -54,6 +59,7 @@ serve(async (req) => {
       },
     })
 
+    // Update order with Stripe session ID
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
