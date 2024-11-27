@@ -7,12 +7,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
-if (!stripeKey) {
+const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
+if (!stripeSecretKey) {
   console.error('STRIPE_SECRET_KEY is not set in environment variables')
 }
 
-const stripe = new Stripe(stripeKey || '', {
+const stripe = new Stripe(stripeSecretKey || '', {
   apiVersion: '2022-11-15',
   httpClient: Stripe.createFetchHttpClient(),
 })
@@ -24,7 +24,7 @@ serve(async (req) => {
   }
 
   try {
-    if (!stripeKey) {
+    if (!stripeSecretKey) {
       throw new Error('Stripe secret key is not configured')
     }
 
@@ -38,15 +38,14 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      billing_address_collection: 'required',
       line_items: [
         {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'Order #' + orderId,
+              name: `Order #${orderId}`,
             },
-            unit_amount: Math.round(price * 100),
+            unit_amount: Math.round(price * 100), // Convert to cents
           },
           quantity: 1,
         },
@@ -56,6 +55,7 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/account/orders?canceled=true`,
       metadata: {
         orderId: orderId,
+        productId: productId,
       },
     })
 
