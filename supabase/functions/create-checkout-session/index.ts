@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@11.1.0?target=deno'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,6 +25,7 @@ serve(async (req) => {
 
   try {
     if (!stripeSecretKey) {
+      console.error('Stripe secret key is missing')
       throw new Error('Stripe secret key is not configured')
     }
 
@@ -59,21 +60,7 @@ serve(async (req) => {
       },
     })
 
-    // Update order with Stripe session ID
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    const { error: updateError } = await supabaseClient
-      .from('orders')
-      .update({ stripe_session_id: session.id })
-      .eq('id', orderId)
-
-    if (updateError) {
-      console.error('Error updating order:', updateError)
-      throw new Error('Failed to update order with Stripe session ID')
-    }
+    console.log(`Checkout session created: ${session.id}`)
 
     return new Response(
       JSON.stringify({ url: session.url }),
