@@ -17,13 +17,6 @@ const AuthPage = () => {
         navigate("/auth");
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session);
-      } else if (event === "USER_DELETED") {
-        toast({
-          title: "Account Deleted",
-          description: "Your account has been deleted.",
-          variant: "destructive",
-        });
-        navigate("/auth");
       }
     });
 
