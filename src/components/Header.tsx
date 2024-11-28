@@ -24,38 +24,47 @@ const Header = () => {
 
   useEffect(() => {
     if (session?.user) {
-      const checkAdmin = async () => {
+      const checkAdminStatus = async () => {
         try {
           // First, try to get the profile
-          let { data: profile } = await supabase
-            .from("profiles")
-            .select("is_admin")
-            .eq("id", session.user.id)
+          const { data: profile, error: fetchError } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
             .single();
-          
-          // If no profile exists, create one
-          if (!profile) {
-            const { data: newProfile, error: insertError } = await supabase
-              .from("profiles")
-              .insert([{ id: session.user.id, is_admin: false }])
-              .select("is_admin")
-              .single();
-            
-            if (insertError) {
-              console.error("Error creating profile:", insertError);
-              return;
+
+          if (fetchError) {
+            // If profile doesn't exist, create it
+            if (fetchError.code === 'PGRST116') {
+              const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert([
+                  { 
+                    id: session.user.id,
+                    is_admin: false 
+                  }
+                ])
+                .select('is_admin')
+                .single();
+
+              if (insertError) {
+                console.error('Error creating profile:', insertError);
+                return;
+              }
+
+              setIsAdmin(!!newProfile?.is_admin);
+            } else {
+              console.error('Error fetching profile:', fetchError);
             }
-            
-            profile = newProfile;
+          } else {
+            setIsAdmin(!!profile?.is_admin);
           }
-        
-          setIsAdmin(!!profile?.is_admin);
         } catch (error) {
-          console.error("Error checking admin status:", error);
+          console.error('Error in checkAdminStatus:', error);
         }
       };
-      
-      checkAdmin();
+
+      checkAdminStatus();
     }
   }, [session]);
 
