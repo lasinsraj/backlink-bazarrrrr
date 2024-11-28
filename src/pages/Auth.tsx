@@ -17,32 +17,18 @@ const AuthPage = () => {
         navigate("/auth");
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session);
+      } else if (event === "USER_DELETED") {
+        toast({
+          title: "Account Deleted",
+          description: "Your account has been deleted.",
+          variant: "destructive",
+        });
+        navigate("/auth");
       }
     });
 
-    // Handle auth errors
-    const handleAuthError = (error: any) => {
-      if (error?.message?.includes("rate_limit")) {
-        toast({
-          title: "Too many attempts",
-          description: "Please wait a minute before trying again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Authentication Error",
-          description: error?.message || "An error occurred during authentication.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    // Subscribe to auth errors
-    const authListener = supabase.auth.onError(handleAuthError);
-
     return () => {
       subscription.unsubscribe();
-      authListener.data.subscription.unsubscribe();
     };
   }, [navigate, toast]);
 
@@ -57,17 +43,14 @@ const AuthPage = () => {
             style: {
               button: { background: 'rgb(59 130 246)', color: 'white' },
               anchor: { color: 'rgb(59 130 246)' },
+              message: { color: 'rgb(239 68 68)' }, // Red color for error messages
             }
           }}
           theme="light"
           providers={[]}
-          onError={(error) => {
-            toast({
-              title: "Error",
-              description: error.message,
-              variant: "destructive",
-            });
-          }}
+          redirectTo={window.location.origin}
+          showLinks={true}
+          view="sign_in"
         />
       </div>
     </div>
