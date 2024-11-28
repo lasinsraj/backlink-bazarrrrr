@@ -25,13 +25,34 @@ const Header = () => {
   useEffect(() => {
     if (session?.user) {
       const checkAdmin = async () => {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("is_admin")
-          .eq("id", session.user.id)
-          .single();
+        try {
+          // First, try to get the profile
+          let { data: profile } = await supabase
+            .from("profiles")
+            .select("is_admin")
+            .eq("id", session.user.id)
+            .single();
+          
+          // If no profile exists, create one
+          if (!profile) {
+            const { data: newProfile, error: insertError } = await supabase
+              .from("profiles")
+              .insert([{ id: session.user.id, is_admin: false }])
+              .select("is_admin")
+              .single();
+            
+            if (insertError) {
+              console.error("Error creating profile:", insertError);
+              return;
+            }
+            
+            profile = newProfile;
+          }
         
-        setIsAdmin(!!profile?.is_admin);
+          setIsAdmin(!!profile?.is_admin);
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+        }
       };
       
       checkAdmin();
