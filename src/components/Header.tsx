@@ -9,7 +9,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { useToast } from "./ui/use-toast";
@@ -20,6 +20,23 @@ const Header = () => {
   const { toast } = useToast();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (session?.user) {
+      const checkAdmin = async () => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", session.user.id)
+          .single();
+        
+        setIsAdmin(!!profile?.is_admin);
+      };
+      
+      checkAdmin();
+    }
+  }, [session]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -91,6 +108,11 @@ const Header = () => {
                   <DropdownMenuItem onSelect={() => navigate("/account/payments")}>
                     Payment Methods
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onSelect={() => navigate("/admin")}>
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onSelect={handleSignOut}>
                     Sign Out
                   </DropdownMenuItem>
