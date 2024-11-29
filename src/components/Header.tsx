@@ -16,7 +16,7 @@ import { useToast } from "./ui/use-toast";
 
 const Header = () => {
   const navigate = useNavigate();
-  const { session } = useSessionContext();
+  const { session, setSession } = useSessionContext();
   const { toast } = useToast();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -49,30 +49,39 @@ const Header = () => {
 
   const handleSignOut = async () => {
     try {
+      // First try to sign out remotely
       const { error } = await supabase.auth.signOut();
-      if (error) {
+      
+      // Even if there's an error, we want to clear the local session
+      setSession(null);
+      setIsAdmin(false);
+      
+      // Only show error if it's not the session_not_found error
+      if (error && !error.message?.includes('session_not_found')) {
         console.error('Error signing out:', error);
         toast({
-          title: "Error",
-          description: "Failed to sign out. Please try again.",
+          title: "Warning",
+          description: "Signed out locally. You may need to refresh the page.",
           variant: "destructive",
         });
-        return;
+      } else {
+        toast({
+          title: "Success",
+          description: "You have been signed out successfully.",
+        });
       }
       
-      // Clear any local state
+      navigate("/");
+    } catch (error) {
+      console.error('Error in handleSignOut:', error);
+      // Clear local session state anyway
+      setSession(null);
       setIsAdmin(false);
       navigate("/");
       
       toast({
-        title: "Success",
-        description: "You have been signed out successfully.",
-      });
-    } catch (error) {
-      console.error('Error in handleSignOut:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Warning",
+        description: "Signed out locally. You may need to refresh the page.",
         variant: "destructive",
       });
     }
