@@ -26,7 +26,6 @@ const Header = () => {
     if (session?.user) {
       const checkAdminStatus = async () => {
         try {
-          // First, try to get the profile
           const { data: profile, error: fetchError } = await supabase
             .from('profiles')
             .select('is_admin')
@@ -34,31 +33,11 @@ const Header = () => {
             .single();
 
           if (fetchError) {
-            // If profile doesn't exist, create it
-            if (fetchError.code === 'PGRST116') {
-              const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert([
-                  { 
-                    id: session.user.id,
-                    is_admin: false 
-                  }
-                ])
-                .select('is_admin')
-                .single();
-
-              if (insertError) {
-                console.error('Error creating profile:', insertError);
-                return;
-              }
-
-              setIsAdmin(!!newProfile?.is_admin);
-            } else {
-              console.error('Error fetching profile:', fetchError);
-            }
-          } else {
-            setIsAdmin(!!profile?.is_admin);
+            console.error('Error fetching profile:', fetchError);
+            return;
           }
+          
+          setIsAdmin(!!profile?.is_admin);
         } catch (error) {
           console.error('Error in checkAdminStatus:', error);
         }
@@ -69,12 +48,37 @@ const Header = () => {
   }, [session]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+        toast({
+          title: "Error",
+          description: "Failed to sign out. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Clear any local state
+      setIsAdmin(false);
+      navigate("/");
+      
+      toast({
+        title: "Success",
+        description: "You have been signed out successfully.",
+      });
+    } catch (error) {
+      console.error('Error in handleSignOut:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSearch = (query: string) => {
-    // Implement search functionality
     toast({
       title: "Search",
       description: `Searching for: ${query}`,
