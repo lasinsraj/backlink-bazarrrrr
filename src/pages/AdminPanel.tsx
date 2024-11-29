@@ -26,44 +26,14 @@ const AdminPanel = () => {
           return;
         }
 
-        // First try to get the profile
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile, error } = await supabase
           .from("profiles")
           .select("is_admin")
           .eq("id", session.user.id)
           .single();
 
-        if (profileError) {
-          console.error("Error fetching admin status:", profileError);
-          // If profile doesn't exist, create it
-          if (profileError.code === 'PGRST116') {
-            const { data: newProfile, error: insertError } = await supabase
-              .from('profiles')
-              .insert([
-                { 
-                  id: session.user.id,
-                  is_admin: false 
-                }
-              ])
-              .select('is_admin')
-              .single();
-
-            if (insertError) {
-              console.error('Error creating profile:', insertError);
-              toast({
-                title: "Error",
-                description: "Failed to verify admin status",
-                variant: "destructive",
-              });
-              navigate("/");
-              return;
-            }
-
-            setIsAdmin(!!newProfile?.is_admin);
-            setLoading(false);
-            return;
-          }
-
+        if (error) {
+          console.error("Error fetching admin status:", error);
           toast({
             title: "Error",
             description: "Failed to verify admin status",
