@@ -26,14 +26,44 @@ const AdminPanel = () => {
           return;
         }
 
-        const { data: profile, error } = await supabase
+        // First try to get the profile
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("is_admin")
           .eq("id", session.user.id)
           .single();
 
-        if (error) {
-          console.error("Error fetching admin status:", error);
+        if (profileError) {
+          console.error("Error fetching admin status:", profileError);
+          // If profile doesn't exist, create it
+          if (profileError.code === 'PGRST116') {
+            const { data: newProfile, error: insertError } = await supabase
+              .from('profiles')
+              .insert([
+                { 
+                  id: session.user.id,
+                  is_admin: false 
+                }
+              ])
+              .select('is_admin')
+              .single();
+
+            if (insertError) {
+              console.error('Error creating profile:', insertError);
+              toast({
+                title: "Error",
+                description: "Failed to verify admin status",
+                variant: "destructive",
+              });
+              navigate("/");
+              return;
+            }
+
+            setIsAdmin(!!newProfile?.is_admin);
+            setLoading(false);
+            return;
+          }
+
           toast({
             title: "Error",
             description: "Failed to verify admin status",
@@ -57,6 +87,11 @@ const AdminPanel = () => {
         setLoading(false);
       } catch (error) {
         console.error("Error in checkAdmin:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
         navigate("/");
       }
     };
@@ -76,11 +111,11 @@ const AdminPanel = () => {
     return (
       <div className="container py-8">
         <Alert variant="destructive">
-          <AlertDescription>
-            You don't have permission to access the admin panel.
+          <AlertDescription className="flex items-center justify-between">
+            <span>You don't have permission to access the admin panel.</span>
             <Button
-              variant="link"
-              className="ml-2"
+              variant="outline"
+              size="sm"
               onClick={() => navigate("/")}
             >
               Return to Home
