@@ -8,6 +8,8 @@ import { useToast } from "@/components/ui/use-toast";
 import UserManagement from "@/components/admin/UserManagement";
 import OrderManagement from "@/components/admin/OrderManagement";
 import ProductManagement from "@/components/admin/ProductManagement";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -18,29 +20,45 @@ const AdminPanel = () => {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      if (!session?.user) {
-        navigate("/auth");
-        return;
-      }
+      try {
+        if (!session?.user) {
+          navigate("/auth");
+          return;
+        }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", session.user.id)
-        .single();
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", session.user.id)
+          .single();
 
-      if (!profile?.is_admin) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to access the admin panel.",
-          variant: "destructive",
-        });
+        if (error) {
+          console.error("Error fetching admin status:", error);
+          toast({
+            title: "Error",
+            description: "Failed to verify admin status",
+            variant: "destructive",
+          });
+          navigate("/");
+          return;
+        }
+
+        if (!profile?.is_admin) {
+          toast({
+            title: "Access Denied",
+            description: "You don't have permission to access the admin panel.",
+            variant: "destructive",
+          });
+          navigate("/");
+          return;
+        }
+
+        setIsAdmin(true);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error in checkAdmin:", error);
         navigate("/");
-        return;
       }
-
-      setIsAdmin(true);
-      setLoading(false);
     };
 
     checkAdmin();
@@ -50,6 +68,25 @@ const AdminPanel = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="container py-8">
+        <Alert variant="destructive">
+          <AlertDescription>
+            You don't have permission to access the admin panel.
+            <Button
+              variant="link"
+              className="ml-2"
+              onClick={() => navigate("/")}
+            >
+              Return to Home
+            </Button>
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
