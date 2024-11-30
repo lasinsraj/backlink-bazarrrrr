@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShoppingBag } from "lucide-react";
 
 interface Product {
   id: string;
@@ -54,7 +54,13 @@ const Shop = () => {
 
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-8">Shop</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <ShoppingBag className="h-8 w-8" />
+          Shop
+        </h1>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
           <div
@@ -87,6 +93,15 @@ const Shop = () => {
           </div>
         ))}
       </div>
+
+      {products.length === 0 && (
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold mb-2">No products found</h2>
+          <p className="text-muted-foreground">
+            Check back later for new products.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
