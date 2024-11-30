@@ -15,6 +15,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment";
 import AdminPanel from "./pages/AdminPanel";
+import EditProduct from "./pages/EditProduct";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/products/edit/:id"
+            element={
+              <ProtectedRoute>
+                <EditProduct />
               </ProtectedRoute>
             }
           />
