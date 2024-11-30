@@ -16,6 +16,7 @@ import Checkout from "./pages/Checkout";
 import Payment from "./pages/Payment";
 import AdminPanel from "./pages/AdminPanel";
 import EditProduct from "./pages/EditProduct";
+import Shop from "./pages/Shop";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const AppRoutes = () => {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/shop" element={<Shop />} />
           <Route 
             path="/auth" 
             element={session ? <Navigate to="/" replace /> : <Auth />} 
