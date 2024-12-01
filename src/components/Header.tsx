@@ -80,14 +80,8 @@ const Header = () => {
           </Link>
           
           <div className="hidden md:flex items-center space-x-6">
-            <Link to="/category/keyword-rank" className="text-white/90 hover:text-white">
-              Keyword Rank
-            </Link>
-            <Link to="/category/blog-comments" className="text-white/90 hover:text-white">
-              Blog Comments
-            </Link>
-            <Link to="/category/da-50-plus" className="text-white/90 hover:text-white">
-              DA 50+
+            <Link to="/shop" className="text-white/90 hover:text-white">
+              Shop
             </Link>
           </div>
 
