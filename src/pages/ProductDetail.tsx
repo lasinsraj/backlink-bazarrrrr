@@ -70,11 +70,15 @@ const ProductDetail = () => {
             <ProductInfo product={product} onBuyClick={handleBuyClick} />
           </div>
 
-          {/* Right Column: Reviews and Chat */}
+          {/* Right Column: Chat */}
           <div className="space-y-8">
-            <ProductReviews productId={id!} />
             <ProductChat productId={id!} />
           </div>
+        </div>
+
+        {/* Reviews Section - Moved to bottom */}
+        <div className="mt-12">
+          <ProductReviews productId={id!} />
         </div>
       </div>
       <Footer />
