@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Users, ShoppingCart, Package } from "lucide-react";
+import { Loader2, Users, ShoppingCart, Package, MessageSquare } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import UserManagement from "@/components/admin/UserManagement";
 import OrderManagement from "@/components/admin/OrderManagement";
 import ProductManagement from "@/components/admin/ProductManagement";
+import ChatManagement from "@/components/admin/ChatManagement";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -114,6 +115,10 @@ const AdminPanel = () => {
             <Package className="h-4 w-4" />
             Products
           </TabsTrigger>
+          <TabsTrigger value="chats" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Chats
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -126,6 +131,10 @@ const AdminPanel = () => {
 
         <TabsContent value="products">
           <ProductManagement />
+        </TabsContent>
+
+        <TabsContent value="chats">
+          <ChatManagement />
         </TabsContent>
       </Tabs>
     </div>
