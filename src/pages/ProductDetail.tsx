@@ -7,7 +7,6 @@ import { useSessionContext } from "@supabase/auth-helpers-react";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductReviews from "@/components/product/ProductReviews";
 import ProductChat from "@/components/product/ProductChat";
-import Footer from "@/components/Footer";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -76,12 +75,11 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Reviews Section - Moved to bottom */}
+        {/* Reviews Section */}
         <div className="mt-12">
           <ProductReviews productId={id!} />
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
