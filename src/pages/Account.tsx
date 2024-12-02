@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Account = () => {
   const { section = "profile" } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
   const { session } = useSessionContext();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,22 @@ const Account = () => {
     };
 
     fetchOrders();
-  }, [session, navigate]);
+
+    // Check for success parameter in URL
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("success") === "true") {
+      toast({
+        title: "Payment successful!",
+        description: "Your order has been processed successfully.",
+      });
+    } else if (searchParams.get("canceled") === "true") {
+      toast({
+        title: "Payment canceled",
+        description: "Your payment was canceled.",
+        variant: "destructive",
+      });
+    }
+  }, [session, navigate, location, toast]);
 
   if (loading) {
     return (
