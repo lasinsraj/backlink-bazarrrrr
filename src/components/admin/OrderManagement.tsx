@@ -35,6 +35,9 @@ const OrderManagement = () => {
           *,
           products (
             title
+          ),
+          user:user_id (
+            email
           )
         `)
         .order("created_at", { ascending: false });
@@ -50,6 +53,13 @@ const OrderManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatOrderId = (id: string) => {
+    // Take the last 4 characters of the UUID
+    const shortId = id.slice(-4);
+    // Convert to a number and format with leading zeros
+    return `#${shortId.padStart(4, '0')}`;
   };
 
   const updateOrderStatus = async (orderId: string, status: string) => {
@@ -91,6 +101,7 @@ const OrderManagement = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Order ID</TableHead>
+            <TableHead>Customer Email</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Payment Status</TableHead>
@@ -100,7 +111,10 @@ const OrderManagement = () => {
         <TableBody>
           {orders.map((order) => (
             <TableRow key={order.id}>
-              <TableCell className="font-mono">{order.id}</TableCell>
+              <TableCell className="font-mono">
+                {formatOrderId(order.id)}
+              </TableCell>
+              <TableCell>{order.user?.email || 'N/A'}</TableCell>
               <TableCell>{order.products?.title}</TableCell>
               <TableCell>
                 <Select
