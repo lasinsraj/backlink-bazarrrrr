@@ -35,19 +35,27 @@ const OrderManagement = () => {
           *,
           products (
             title
-          ),
-          profiles:user_id (
-            id
           )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Fetch emails for users from auth.users through profiles
+      // Fetch user emails directly from auth.users using the service role
       const ordersWithEmails = await Promise.all(
         (data || []).map(async (order) => {
-          const { data: userData } = await supabase.auth.admin.getUserById(order.user_id);
+          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
+            order.user_id
+          );
+          
+          if (userError) {
+            console.error("Error fetching user:", userError);
+            return {
+              ...order,
+              userEmail: 'N/A'
+            };
+          }
+
           return {
             ...order,
             userEmail: userData?.user?.email || 'N/A'
