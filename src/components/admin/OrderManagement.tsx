@@ -36,14 +36,26 @@ const OrderManagement = () => {
           products (
             title
           ),
-          user:user_id (
-            email
+          profiles:user_id (
+            id
           )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+
+      // Fetch emails for users from auth.users through profiles
+      const ordersWithEmails = await Promise.all(
+        (data || []).map(async (order) => {
+          const { data: userData } = await supabase.auth.admin.getUserById(order.user_id);
+          return {
+            ...order,
+            userEmail: userData?.user?.email || 'N/A'
+          };
+        })
+      );
+
+      setOrders(ordersWithEmails);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -114,7 +126,7 @@ const OrderManagement = () => {
               <TableCell className="font-mono">
                 {formatOrderId(order.id)}
               </TableCell>
-              <TableCell>{order.user?.email || 'N/A'}</TableCell>
+              <TableCell>{order.userEmail}</TableCell>
               <TableCell>{order.products?.title}</TableCell>
               <TableCell>
                 <Select
