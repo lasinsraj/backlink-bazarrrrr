@@ -35,35 +35,22 @@ const OrderManagement = () => {
           *,
           products (
             title
+          ),
+          profiles!orders_user_id_fkey (
+            id
           )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Fetch user emails directly from auth.users using the service role
-      const ordersWithEmails = await Promise.all(
-        (data || []).map(async (order) => {
-          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
-            order.user_id
-          );
-          
-          if (userError) {
-            console.error("Error fetching user:", userError);
-            return {
-              ...order,
-              userEmail: 'N/A'
-            };
-          }
+      // Format orders with user emails
+      const formattedOrders = (data || []).map(order => ({
+        ...order,
+        userEmail: order.user_id // Keep user_id as email for now since we can't access auth.users
+      }));
 
-          return {
-            ...order,
-            userEmail: userData?.user?.email || 'N/A'
-          };
-        })
-      );
-
-      setOrders(ordersWithEmails);
+      setOrders(formattedOrders);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -121,7 +108,7 @@ const OrderManagement = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Order ID</TableHead>
-            <TableHead>Customer Email</TableHead>
+            <TableHead>Customer ID</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Payment Status</TableHead>
