@@ -36,7 +36,7 @@ const OrderManagement = () => {
           products (
             title
           ),
-          user:profiles!orders_user_id_fkey (
+          profiles!orders_user_id_fkey (
             email
           )
         `)
@@ -115,7 +115,7 @@ const OrderManagement = () => {
               <TableCell className="font-mono">
                 {formatOrderId(order.id)}
               </TableCell>
-              <TableCell>{order.user?.email || 'N/A'}</TableCell>
+              <TableCell>{order.profiles?.email || 'N/A'}</TableCell>
               <TableCell>{order.products?.title}</TableCell>
               <TableCell>
                 <Select
