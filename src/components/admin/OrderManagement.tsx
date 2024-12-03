@@ -35,6 +35,9 @@ const OrderManagement = () => {
           *,
           products (
             title
+          ),
+          user:profiles!orders_user_id_fkey (
+            email
           )
         `)
         .order("created_at", { ascending: false });
@@ -99,7 +102,7 @@ const OrderManagement = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Order ID</TableHead>
-            <TableHead>Customer ID</TableHead>
+            <TableHead>Customer Email</TableHead>
             <TableHead>Product</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Payment Status</TableHead>
@@ -112,7 +115,7 @@ const OrderManagement = () => {
               <TableCell className="font-mono">
                 {formatOrderId(order.id)}
               </TableCell>
-              <TableCell>{order.user_id}</TableCell>
+              <TableCell>{order.user?.email || 'N/A'}</TableCell>
               <TableCell>{order.products?.title}</TableCell>
               <TableCell>
                 <Select
