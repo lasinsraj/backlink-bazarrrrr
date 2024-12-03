@@ -35,16 +35,30 @@ const OrderManagement = () => {
           *,
           products (
             title
-          ),
-          profiles!orders_user_id_fkey (
-            email
           )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setOrders(data || []);
+      // Fetch user emails separately since we can't join directly
+      if (data) {
+        const ordersWithEmails = await Promise.all(
+          data.map(async (order) => {
+            const { data: userData } = await supabase
+              .from("profiles")
+              .select("email")
+              .eq("id", order.user_id)
+              .single();
+            
+            return {
+              ...order,
+              userEmail: userData?.email || "N/A",
+            };
+          })
+        );
+        setOrders(ordersWithEmails);
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -60,7 +74,7 @@ const OrderManagement = () => {
     // Take the last 4 characters of the UUID
     const shortId = id.slice(-4);
     // Convert to a number and format with leading zeros
-    return `#${shortId.padStart(4, '0')}`;
+    return `#${shortId.padStart(4, "0")}`;
   };
 
   const updateOrderStatus = async (orderId: string, status: string) => {
@@ -115,7 +129,7 @@ const OrderManagement = () => {
               <TableCell className="font-mono">
                 {formatOrderId(order.id)}
               </TableCell>
-              <TableCell>{order.profiles?.email || 'N/A'}</TableCell>
+              <TableCell>{order.userEmail}</TableCell>
               <TableCell>{order.products?.title}</TableCell>
               <TableCell>
                 <Select
