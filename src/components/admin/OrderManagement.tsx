@@ -35,22 +35,13 @@ const OrderManagement = () => {
           *,
           products (
             title
-          ),
-          profiles!orders_user_id_fkey (
-            id
           )
         `)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // Format orders with user emails
-      const formattedOrders = (data || []).map(order => ({
-        ...order,
-        userEmail: order.user_id // Keep user_id as email for now since we can't access auth.users
-      }));
-
-      setOrders(formattedOrders);
+      setOrders(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -121,7 +112,7 @@ const OrderManagement = () => {
               <TableCell className="font-mono">
                 {formatOrderId(order.id)}
               </TableCell>
-              <TableCell>{order.userEmail}</TableCell>
+              <TableCell>{order.user_id}</TableCell>
               <TableCell>{order.products?.title}</TableCell>
               <TableCell>
                 <Select
