@@ -4,8 +4,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download, Eye } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const Account = () => {
   const { section = "profile" } = useParams();
@@ -15,6 +23,7 @@ const Account = () => {
   const { session } = useSessionContext();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) {
@@ -52,6 +61,10 @@ const Account = () => {
       });
     }
   }, [session, navigate, location, toast]);
+
+  const handlePreview = (url: string) => {
+    setPreviewUrl(url);
+  };
 
   if (loading) {
     return (
@@ -96,14 +109,41 @@ const Account = () => {
                   <CardTitle>{order.products.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm">Status: <span className="font-medium">{order.status}</span></p>
-                    <p className="text-sm">Price: <span className="font-medium">${order.products.price}</span></p>
-                    {order.keywords && (
-                      <p className="text-sm">Keywords: <span className="font-medium">{order.keywords}</span></p>
-                    )}
-                    {order.target_url && (
-                      <p className="text-sm">Target URL: <span className="font-medium">{order.target_url}</span></p>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-sm">Status: <span className="font-medium">{order.status}</span></p>
+                      <p className="text-sm">Price: <span className="font-medium">${order.products.price}</span></p>
+                      {order.keywords && (
+                        <p className="text-sm">Keywords: <span className="font-medium">{order.keywords}</span></p>
+                      )}
+                      {order.target_url && (
+                        <p className="text-sm">Target URL: <span className="font-medium">{order.target_url}</span></p>
+                      )}
+                    </div>
+                    
+                    {order.attachment_url && (
+                      <div className="flex items-center gap-2 mt-4">
+                        <p className="text-sm font-medium">Attachment:</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePreview(order.attachment_url)}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Preview
+                        </Button>
+                        <a
+                          href={order.attachment_url}
+                          download={order.attachment_name}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                        </a>
+                      </div>
                     )}
                   </div>
                 </CardContent>
@@ -123,6 +163,34 @@ const Account = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Attachment Preview</DialogTitle>
+            <DialogDescription>
+              Preview of the attachment for your order
+            </DialogDescription>
+          </DialogHeader>
+          {previewUrl && (
+            <div className="aspect-video">
+              {previewUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
+                <img
+                  src={previewUrl}
+                  alt="Attachment preview"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <iframe
+                  src={previewUrl}
+                  className="w-full h-full"
+                  title="Attachment preview"
+                />
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
