@@ -29,7 +29,8 @@ const OrderManagement = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
         .select(`
           *,
@@ -39,24 +40,29 @@ const OrderManagement = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (ordersError) throw ordersError;
 
-      // Fetch user emails separately since we can't join directly
-      if (data) {
-        const ordersWithEmails = await Promise.all(
-          data.map(async (order) => {
-            const { data: userData } = await supabase
-              .from("profiles")
-              .select("email")
-              .eq("id", order.user_id)
-              .single();
-            
-            return {
-              ...order,
-              userEmail: userData?.email || "N/A",
-            };
-          })
+      if (ordersData) {
+        // Get unique user IDs
+        const userIds = [...new Set(ordersData.map(order => order.user_id))];
+        
+        // Fetch all profiles in one query
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("id, email")
+          .in("id", userIds);
+
+        // Create a map of user IDs to emails
+        const emailMap = new Map(
+          profilesData?.map(profile => [profile.id, profile.email]) || []
         );
+
+        // Combine orders with emails
+        const ordersWithEmails = ordersData.map(order => ({
+          ...order,
+          userEmail: emailMap.get(order.user_id) || "Unknown User",
+        }));
+
         setOrders(ordersWithEmails);
       }
     } catch (error: any) {
