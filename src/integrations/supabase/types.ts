@@ -43,6 +43,8 @@ export type Database = {
       }
       orders: {
         Row: {
+          attachment_name: string | null
+          attachment_url: string | null
           created_at: string
           id: string
           keywords: string | null
@@ -54,6 +56,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           created_at?: string
           id?: string
           keywords?: string | null
@@ -65,6 +69,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           created_at?: string
           id?: string
           keywords?: string | null
