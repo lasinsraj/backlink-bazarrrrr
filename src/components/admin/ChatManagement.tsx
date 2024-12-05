@@ -1,33 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, MessageCircle } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface ChatMessage {
-  id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-  sender_email?: string;
-  product_id: string;
-  product_title?: string;
-}
+import { Loader2 } from "lucide-react";
+import ChatList from "./ChatList";
+import ChatDialog from "./ChatDialog";
+import { type ChatMessage } from "./types";
 
 const ChatManagement = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -39,7 +16,32 @@ const ChatManagement = () => {
 
   useEffect(() => {
     fetchMessages();
+    setupRealtimeSubscription();
   }, []);
+
+  const setupRealtimeSubscription = () => {
+    const channel = supabase
+      .channel('chat_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          if (payload.new.product_id === selectedChat) {
+            fetchChatMessages(selectedChat);
+          }
+          fetchMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
 
   const fetchMessages = async () => {
     try {
@@ -56,11 +58,10 @@ const ChatManagement = () => {
 
       if (error) throw error;
 
-      // Fetch user emails for each unique sender_id
       const senderIds = [...new Set(messages?.map(msg => msg.sender_id) || [])];
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email:id")
+        .select("id, email")
         .in("id", senderIds);
 
       if (profilesError) throw profilesError;
@@ -85,7 +86,7 @@ const ChatManagement = () => {
     }
   };
 
-  const viewChat = async (productId: string) => {
+  const fetchChatMessages = async (productId: string) => {
     try {
       setChatLoading(true);
       setSelectedChat(productId);
@@ -103,11 +104,10 @@ const ChatManagement = () => {
 
       if (error) throw error;
 
-      // Fetch user emails
       const senderIds = [...new Set(data?.map(msg => msg.sender_id) || [])];
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email:id")
+        .select("id, email")
         .in("id", senderIds);
 
       if (profilesError) throw profilesError;
@@ -143,75 +143,14 @@ const ChatManagement = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Chat Management</h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>Last Message From</TableHead>
-            <TableHead>Last Message</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {messages.map((message) => (
-            <TableRow key={message.id}>
-              <TableCell>{message.product_title}</TableCell>
-              <TableCell>{message.sender_email}</TableCell>
-              <TableCell className="max-w-[200px] truncate">
-                {message.content}
-              </TableCell>
-              <TableCell>
-                {new Date(message.created_at).toLocaleDateString()}
-              </TableCell>
-              <TableCell>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => viewChat(message.product_id)}
-                  className="flex items-center gap-2"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  View Chat
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <Dialog open={!!selectedChat} onOpenChange={() => setSelectedChat(null)}>
-        <DialogContent className="max-w-2xl h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>
-              Chat History - {chatMessages[0]?.product_title || "Loading..."}
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="flex-1 p-4">
-            {chatLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {chatMessages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className="flex flex-col space-y-1"
-                  >
-                    <div className="text-sm text-muted-foreground">
-                      {msg.sender_email} - {new Date(msg.created_at).toLocaleString()}
-                    </div>
-                    <div className="bg-muted p-3 rounded-lg">
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      <ChatList messages={messages} onViewChat={fetchChatMessages} />
+      <ChatDialog
+        open={!!selectedChat}
+        onOpenChange={(open) => !open && setSelectedChat(null)}
+        messages={chatMessages}
+        productId={selectedChat}
+        isLoading={chatLoading}
+      />
     </div>
   );
 };
