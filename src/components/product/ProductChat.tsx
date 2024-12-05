@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, MessageCircle } from "lucide-react";
@@ -31,6 +31,13 @@ const ProductChat = ({ productId }: ProductChatProps) => {
   const { session } = useSessionContext();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel>;
@@ -47,6 +54,10 @@ const ProductChat = ({ productId }: ProductChatProps) => {
     };
   }, [productId, open]);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const fetchMessages = async () => {
     try {
       setIsLoading(true);
@@ -59,6 +70,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
       if (error) throw error;
       setMessages(data || []);
     } catch (error: any) {
+      console.error("Error fetching messages:", error);
       toast({
         title: "Error fetching messages",
         description: error.message,
@@ -87,6 +99,16 @@ const ProductChat = ({ productId }: ProductChatProps) => {
       .subscribe();
   };
 
+  const handleTyping = () => {
+    setIsTyping(true);
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 1000);
+  };
+
   const handleSendMessage = async () => {
     if (!session) {
       toast({
@@ -109,6 +131,7 @@ const ProductChat = ({ productId }: ProductChatProps) => {
       if (error) throw error;
       setMessage("");
     } catch (error: any) {
+      console.error("Error sending message:", error);
       toast({
         title: "Error sending message",
         description: error.message,
@@ -140,25 +163,34 @@ const ProductChat = ({ productId }: ProductChatProps) => {
                 <span className="text-sm text-gray-500">No messages yet</span>
               </div>
             ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`p-3 rounded-lg max-w-[80%] ${
-                    msg.sender_id === session?.user?.id
-                      ? "ml-auto bg-primary text-white"
-                      : "bg-white border"
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              ))
+              <>
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`p-3 rounded-lg max-w-[80%] ${
+                      msg.sender_id === session?.user?.id
+                        ? "ml-auto bg-primary text-white"
+                        : "bg-white border"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                ))}
+                {isTyping && (
+                  <div className="text-sm text-gray-500">Someone is typing...</div>
+                )}
+                <div ref={messagesEndRef} />
+              </>
             )}
           </div>
           <div className="p-4 border-t mt-auto">
             <div className="flex gap-2">
               <Textarea
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  handleTyping();
+                }}
                 placeholder="Type your message..."
                 className="resize-none"
                 onKeyDown={(e) => {

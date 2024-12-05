@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,14 @@ const Payment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { session } = useSessionContext();
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  useEffect(() => {
+    // Set user email when session is available
+    if (session?.user?.email) {
+      setUserEmail(session.user.email);
+    }
+  }, [session]);
 
   const { data: order, isLoading: orderLoading, error: orderError } = useQuery({
     queryKey: ["order", orderId],
@@ -50,6 +58,7 @@ const Payment = () => {
           orderId: orderId,
           productId: order?.products?.id,
           price: order?.products?.price,
+          email: userEmail, // Pass the email to the checkout session
         },
       });
 
@@ -143,6 +152,18 @@ const Payment = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
+
+            <div className="space-y-4">
+              <div className="form-group">
+                <label className="block text-sm font-medium mb-2">Email</label>
+                <input
+                  type="email"
+                  value={userEmail}
+                  readOnly
+                  className="w-full px-3 py-2 border rounded-md bg-gray-50"
+                />
+              </div>
+            </div>
 
             <Button
               onClick={handlePayment}
