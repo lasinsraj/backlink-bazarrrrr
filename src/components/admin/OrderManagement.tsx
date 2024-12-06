@@ -185,6 +185,8 @@ const OrderManagement = () => {
             <TableHead>Product</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Payment Status</TableHead>
+            <TableHead>Keywords</TableHead>
+            <TableHead>Target URL</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Attachment</TableHead>
           </TableRow>
@@ -214,6 +216,21 @@ const OrderManagement = () => {
                 </Select>
               </TableCell>
               <TableCell>{order.payment_status}</TableCell>
+              <TableCell className="max-w-[200px] truncate">
+                {order.keywords || "N/A"}
+              </TableCell>
+              <TableCell className="max-w-[200px] truncate">
+                {order.target_url ? (
+                  <a 
+                    href={order.target_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    {order.target_url}
+                  </a>
+                ) : "N/A"}
+              </TableCell>
               <TableCell>
                 {new Date(order.created_at).toLocaleDateString()}
               </TableCell>

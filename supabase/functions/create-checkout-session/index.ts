@@ -6,37 +6,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-if (!stripeSecretKey) {
-  console.error('STRIPE_SECRET_KEY is not set in environment variables')
-}
-
-const stripe = new Stripe(stripeSecretKey || '', {
-  apiVersion: '2022-11-15',
-  httpClient: Stripe.createFetchHttpClient(),
-})
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    if (!stripeSecretKey) {
-      throw new Error('Stripe secret key is not configured')
-    }
-
-    const { orderId, productId, price } = await req.json()
+    const { orderId, productId, price, email } = await req.json()
     
-    if (!orderId || !productId || !price) {
+    if (!orderId || !productId || !price || !email) {
       throw new Error('Missing required parameters')
     }
 
     console.log(`Creating checkout session for order ${orderId} with price ${price}`)
 
-    // Update success and cancel URLs to use hash routing
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2022-11-15',
+      httpClient: Stripe.createFetchHttpClient(),
+    })
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
+      customer_email: email,
       line_items: [
         {
           price_data: {
@@ -68,7 +59,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error in create-checkout-session:', error)
+    console.error('Error creating payment session:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

@@ -37,8 +37,7 @@ Deno.serve(async (request) => {
           .from('orders')
           .update({
             payment_status: 'completed',
-            status: 'processing',
-            stripe_session_id: session.id
+            status: 'processing'
           })
           .eq('id', orderId)
 
