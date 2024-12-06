@@ -38,10 +38,19 @@ const FeaturedProducts = () => {
     );
   }
 
+  const getDefaultImage = (index: number) => {
+    const defaultImages = [
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
+    ];
+    return defaultImages[index % defaultImages.length];
+  };
+
   return (
     <section className="py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center animate-fade-in">
+        <h2 className="text-3xl font-bold mb-8 text-center animate-[fade-in_0.2s_ease-out]">
           Featured Backlinks
         </h2>
         
@@ -49,14 +58,20 @@ const FeaturedProducts = () => {
           {products?.map((product, index) => (
             <div
               key={product.id}
-              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 animate-fade-in"
-              style={{ animationDelay: `${index * 200}ms` }}
+              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-all duration-200 animate-[fade-in_0.2s_ease-out]"
+              style={{ animationDelay: `${index * 100}ms` }}
             >
-              <img
-                src={product.image_url || "https://images.unsplash.com/photo-1458668383970-8ddd3927deed"}
-                alt={product.title}
-                className="w-full h-48 object-cover"
-              />
+              <div className="relative h-48 w-full">
+                <img
+                  src={product.image_url || getDefaultImage(index)}
+                  alt={product.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = getDefaultImage(index);
+                  }}
+                />
+              </div>
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">{product.title}</h3>
                 <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>

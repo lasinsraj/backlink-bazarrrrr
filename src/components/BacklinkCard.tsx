@@ -31,8 +31,10 @@ const BacklinkCard = ({
 }: BacklinkCardProps) => {
   const navigate = useNavigate();
 
+  const defaultImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80";
+
   return (
-    <div className={`bg-card rounded-lg border p-6 transition-all duration-200 hover:shadow-lg animate-fade-in ${isSponsored ? 'border-primary/20' : ''}`}>
+    <div className={`bg-card rounded-lg border p-6 transition-all duration-200 hover:shadow-lg animate-[fade-in_0.2s_ease-out] ${isSponsored ? 'border-primary/20' : ''}`}>
       {isSponsored && (
         <div className="text-xs font-medium text-primary mb-2">
           Sponsored
@@ -41,9 +43,13 @@ const BacklinkCard = ({
       
       <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
         <img 
-          src={image} 
+          src={image || defaultImage} 
           alt={title}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = defaultImage;
+          }}
         />
       </div>
 
