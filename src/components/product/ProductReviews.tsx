@@ -6,10 +6,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useSessionContext } from "@supabase/auth-helpers-react";
+import { Database } from "@/integrations/supabase/types";
 
 interface ProductReviewsProps {
   productId: string;
 }
+
+type ReviewWithProfile = Database['public']['Tables']['reviews']['Row'] & {
+  profiles: {
+    email: string | null;
+  } | null;
+};
 
 const ProductReviews = ({ productId }: ProductReviewsProps) => {
   const [newReview, setNewReview] = useState("");
@@ -27,7 +34,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
         .order("created_at", { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as ReviewWithProfile[];
     },
   });
 
