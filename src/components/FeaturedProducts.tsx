@@ -4,23 +4,49 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { Eye, DollarSign } from "lucide-react";
+import { useToast } from "./ui/use-toast";
 
 const FeaturedProducts = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, error } = useQuery({
     queryKey: ['featured-products'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .limit(3)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .limit(3)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
-    }
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+
+        return data;
+      } catch (error: any) {
+        console.error('Query error:', error);
+        toast({
+          variant: "destructive",
+          title: "Error loading products",
+          description: error.message
+        });
+        throw error;
+      }
+    },
+    retry: 2,
+    retryDelay: 1000
   });
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <p className="text-red-500">Failed to load products. Please try again later.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
