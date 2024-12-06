@@ -53,6 +53,8 @@ const ProductDetail = () => {
     return <div>Product not found</div>;
   }
 
+  const defaultImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80";
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -61,9 +63,13 @@ const ProductDetail = () => {
           <div className="space-y-6">
             <div className="relative h-96 rounded-lg overflow-hidden bg-white">
               <img 
-                src="/placeholder.svg"
+                src={product.image_url || defaultImage}
                 alt={product.title}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = defaultImage;
+                }}
               />
             </div>
             <ProductInfo product={product} onBuyClick={handleBuyClick} />
