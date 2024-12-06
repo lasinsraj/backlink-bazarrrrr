@@ -28,19 +28,6 @@ const ProductDetail = () => {
     },
   });
 
-  const handleBuyClick = () => {
-    if (!session) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to make a purchase",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-    navigate(`/checkout/${id}`);
-  };
-
   if (productLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -59,24 +46,22 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Left Column: Image and Product Info */}
-          <div className="space-y-6">
-            <div className="relative h-96 rounded-lg overflow-hidden bg-white">
-              <img 
-                src={product.image_url || defaultImage}
-                alt={product.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = defaultImage;
-                }}
-              />
-            </div>
-            <ProductInfo product={product} onBuyClick={handleBuyClick} />
+          {/* Left Column: Image */}
+          <div className="relative h-[300px] md:h-[500px] rounded-lg overflow-hidden bg-white shadow-sm">
+            <img 
+              src={product.image_url || defaultImage}
+              alt={product.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = defaultImage;
+              }}
+            />
           </div>
 
-          {/* Right Column: Chat */}
-          <div className="space-y-8">
+          {/* Right Column: Product Info and Chat */}
+          <div className="space-y-6">
+            <ProductInfo product={product} onBuyClick={() => navigate(`/checkout/${id}`)} />
             <ProductChat productId={id!} />
           </div>
         </div>
