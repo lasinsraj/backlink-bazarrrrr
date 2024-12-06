@@ -13,7 +13,7 @@ interface ProductReviewsProps {
 }
 
 type ReviewWithProfile = Database['public']['Tables']['reviews']['Row'] & {
-  profiles: {
+  user: {
     email: string | null;
   } | null;
 };
@@ -27,14 +27,32 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
   const { data: reviews, isLoading, refetch } = useQuery({
     queryKey: ["reviews", productId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from("reviews")
-        .select("*, profiles(email)")
+        .select("*")
         .eq("product_id", productId)
         .order("created_at", { ascending: false });
       
-      if (error) throw error;
-      return data as ReviewWithProfile[];
+      if (reviewsError) throw reviewsError;
+
+      // Then get the profiles for these reviews
+      const reviewsWithProfiles = await Promise.all(
+        (reviewsData || []).map(async (review) => {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("email")
+            .eq("id", review.user_id)
+            .single();
+
+          return {
+            ...review,
+            user: profileData
+          };
+        })
+      );
+
+      return reviewsWithProfiles as ReviewWithProfile[];
     },
   });
 
@@ -137,7 +155,7 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
               <div className="flex items-center space-x-2">
                 <User className="h-5 w-5 text-slate-400" />
                 <span className="text-sm text-slate-600">
-                  {review.profiles?.email || "Anonymous"}
+                  {review.user?.email || "Anonymous"}
                 </span>
               </div>
               <div className="flex items-center">
