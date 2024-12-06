@@ -36,9 +36,16 @@ const ProductReviews = ({ productId }: ProductReviewsProps) => {
       
       if (reviewsError) throw reviewsError;
 
-      // Then get the profiles for these reviews
+      // Then get the profiles for these reviews, but only if user_id exists
       const reviewsWithProfiles = await Promise.all(
         (reviewsData || []).map(async (review) => {
+          if (!review.user_id) {
+            return {
+              ...review,
+              user: null
+            };
+          }
+
           const { data: profileData } = await supabase
             .from("profiles")
             .select("email")
