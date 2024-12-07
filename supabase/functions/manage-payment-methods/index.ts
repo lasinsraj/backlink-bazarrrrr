@@ -14,19 +14,19 @@ serve(async (req) => {
   }
 
   try {
-    // Check for Stripe secret key
+    // Initialize Stripe
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeKey) {
       console.error('STRIPE_SECRET_KEY is not set')
       throw new Error('Stripe configuration error')
     }
 
-    // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2022-11-15',
+      httpClient: Stripe.createFetchHttpClient(),
     })
 
-    // Get Supabase configuration
+    // Get Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
@@ -35,29 +35,23 @@ serve(async (req) => {
       throw new Error('Supabase configuration error')
     }
 
-    // Create Supabase client
-    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey)
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      console.error('No authorization header provided')
+      console.error('No authorization header')
       throw new Error('No authorization header')
     }
 
     // Verify the JWT token
     const token = authHeader.replace('Bearer ', '')
     console.log('Verifying token...')
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     
-    if (authError) {
+    if (authError || !user) {
       console.error('Auth error:', authError)
       throw new Error('Invalid token')
-    }
-    
-    if (!user) {
-      console.error('No user found')
-      throw new Error('User not found')
     }
 
     console.log('User authenticated:', user.email)
@@ -102,7 +96,7 @@ serve(async (req) => {
 
       console.log('Deleting payment method:', paymentMethodId)
       await stripe.paymentMethods.detach(paymentMethodId)
-      console.log('Successfully deleted payment method:', paymentMethodId)
+      console.log('Successfully deleted payment method')
 
       return new Response(
         JSON.stringify({ success: true }),
