@@ -12,13 +12,13 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, productId, price, email } = await req.json()
+    const { productId, price, email, userId } = await req.json()
     
-    if (!orderId || !productId || !price || !email) {
+    if (!productId || !price || !email || !userId) {
       throw new Error('Missing required parameters')
     }
 
-    console.log(`Creating checkout session for order ${orderId} with price ${price}`)
+    console.log(`Creating checkout session for product ${productId}`)
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2022-11-15',
@@ -33,7 +33,7 @@ serve(async (req) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `Order #${orderId}`,
+              name: `Product #${productId}`,
             },
             unit_amount: Math.round(price * 100),
           },
@@ -41,19 +41,15 @@ serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/#/account/orders?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.get('origin')}/#/account/orders?success=true`,
       cancel_url: `${req.headers.get('origin')}/#/account/orders?canceled=true`,
-      payment_intent_data: {
-        setup_future_usage: 'off_session',
-      },
       metadata: {
-        orderId: orderId,
-        productId: productId,
-      },
+        userId: userId,
+        productId: productId
+      }
     })
 
-    console.log(`Checkout session created: ${session.id}`)
-
+    console.log('Checkout session created:', session.id)
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
