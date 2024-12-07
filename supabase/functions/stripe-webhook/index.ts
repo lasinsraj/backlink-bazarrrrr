@@ -8,69 +8,90 @@ const corsHeaders = {
 }
 
 serve(async (request) => {
-  const signature = request.headers.get('Stripe-Signature')
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
 
   try {
+    const signature = request.headers.get('Stripe-Signature')
+    
+    if (!signature) {
+      throw new Error('No signature found')
+    }
+
     const body = await request.text()
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2022-11-15',
       httpClient: Stripe.createFetchHttpClient(),
     })
 
-    const receivedEvent = await stripe.webhooks.constructEventAsync(
+    console.log('Verifying Stripe webhook signature...')
+    
+    const event = await stripe.webhooks.constructEventAsync(
       body,
-      signature!,
-      Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET')!,
+      signature,
+      Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET') || '',
       undefined,
       undefined
     )
 
-    console.log(`Event received: ${receivedEvent.id}`)
+    console.log(`Event received: ${event.type}`)
 
-    // Handle successful payment
-    if (receivedEvent.type === 'checkout.session.completed') {
-      const session = receivedEvent.data.object as Stripe.Checkout.Session
-      const metadata = session.metadata
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session
       
-      if (!metadata?.userId || !metadata?.productId) {
-        throw new Error('Missing required metadata')
+      // Get the metadata from the session
+      const metadata = session.metadata
+      console.log('Session metadata:', metadata)
+
+      if (!metadata?.userId || !metadata?.productId || !metadata?.keywords || !metadata?.targetUrl) {
+        console.log('Missing required metadata')
+        throw new Error('Missing required metadata in session')
       }
 
+      // Initialize Supabase client
       const supabase = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+        Deno.env.get('SUPABASE_URL') || '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
       )
 
-      // Create the order after successful payment
-      const { error: orderError } = await supabase
+      console.log('Creating order in database...')
+      
+      // Create the order
+      const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: metadata.userId,
           product_id: metadata.productId,
           payment_status: 'completed',
-          status: 'completed',
-          stripe_session_id: session.id
+          status: 'pending',
+          stripe_session_id: session.id,
+          keywords: metadata.keywords || null,
+          target_url: metadata.targetUrl || null
         })
+        .select()
+        .single()
 
       if (orderError) {
         console.error('Error creating order:', orderError)
         throw orderError
       }
 
-      console.log('Order created successfully')
+      console.log('Order created successfully:', order)
     }
 
-    return new Response(JSON.stringify({ ok: true }), { 
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
     })
-  } catch (err) {
-    console.error('Error processing webhook:', err)
+
+  } catch (error) {
+    console.error('Error processing webhook:', error)
     return new Response(
-      JSON.stringify({ error: 'Failed to process webhook' }), 
+      JSON.stringify({ error: error.message }), 
       { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
       }
     )
   }

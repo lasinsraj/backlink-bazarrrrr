@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { productId, price, email, userId } = await req.json()
+    const { productId, price, email, userId, keywords, targetUrl } = await req.json()
     
     if (!productId || !price || !email || !userId) {
       throw new Error('Missing required parameters')
@@ -44,8 +44,10 @@ serve(async (req) => {
       success_url: `${req.headers.get('origin')}/#/account/orders?success=true`,
       cancel_url: `${req.headers.get('origin')}/#/account/orders?canceled=true`,
       metadata: {
-        userId: userId,
-        productId: productId
+        userId,
+        productId,
+        keywords: keywords || '',
+        targetUrl: targetUrl || ''
       }
     })
 
