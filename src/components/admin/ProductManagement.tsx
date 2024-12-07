@@ -45,25 +45,16 @@ const ProductManagement = () => {
 
   const handleDelete = async (productId: string) => {
     try {
-      // First, delete associated messages
-      const { error: messagesError } = await supabase
-        .from("messages")
-        .delete()
-        .eq("product_id", productId);
-
-      if (messagesError) throw messagesError;
-
-      // Then delete the product
-      const { error: productError } = await supabase
+      const { error } = await supabase
         .from("products")
         .delete()
         .eq("id", productId);
 
-      if (productError) throw productError;
+      if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Product and associated messages deleted successfully",
+        description: "Product deleted successfully",
       });
       
       fetchProducts();
