@@ -19,7 +19,6 @@ const Payment = () => {
   const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
-    // Set user email when session is available
     if (session?.user?.email) {
       setUserEmail(session.user.email);
     }
@@ -53,12 +52,23 @@ const Payment = () => {
     setError(null);
     
     try {
+      console.log("Creating checkout session with params:", {
+        productId: order?.products?.id,
+        price: order?.products?.price,
+        email: userEmail,
+        userId: session?.user?.id,
+        keywords: order?.keywords,
+        targetUrl: order?.target_url
+      });
+
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: {
-          orderId: orderId,
           productId: order?.products?.id,
           price: order?.products?.price,
-          email: userEmail, // Pass the email to the checkout session
+          email: userEmail,
+          userId: session?.user?.id,
+          keywords: order?.keywords || "",
+          targetUrl: order?.target_url || ""
         },
       });
 
