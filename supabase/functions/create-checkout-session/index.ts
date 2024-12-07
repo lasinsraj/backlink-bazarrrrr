@@ -43,6 +43,9 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${req.headers.get('origin')}/#/account/orders?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/#/account/orders?canceled=true`,
+      payment_intent_data: {
+        setup_future_usage: 'off_session',
+      },
       metadata: {
         orderId: orderId,
         productId: productId,

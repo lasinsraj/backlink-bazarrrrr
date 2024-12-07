@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Download, Eye } from "lucide-react";
+import { Loader2, Download, Eye, CreditCard, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +24,8 @@ const Account = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
 
   useEffect(() => {
     if (!session) {
@@ -44,7 +46,28 @@ const Account = () => {
       setLoading(false);
     };
 
+    const fetchPaymentMethods = async () => {
+      setLoadingPaymentMethods(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('manage-payment-methods', {
+          method: 'GET',
+        });
+
+        if (error) throw error;
+        setPaymentMethods(data.paymentMethods || []);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: "Failed to load payment methods",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingPaymentMethods(false);
+      }
+    };
+
     fetchOrders();
+    fetchPaymentMethods();
 
     // Check for success parameter in URL
     const searchParams = new URLSearchParams(location.search);
@@ -53,14 +76,40 @@ const Account = () => {
         title: "Payment successful!",
         description: "Your order has been processed successfully.",
       });
+      // Clear the URL parameters
+      navigate("/account/orders", { replace: true });
     } else if (searchParams.get("canceled") === "true") {
       toast({
         title: "Payment canceled",
         description: "Your payment was canceled.",
         variant: "destructive",
       });
+      navigate("/account/orders", { replace: true });
     }
   }, [session, navigate, location, toast]);
+
+  const handleDeletePaymentMethod = async (paymentMethodId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('manage-payment-methods', {
+        method: 'DELETE',
+        body: { paymentMethodId },
+      });
+
+      if (error) throw error;
+
+      setPaymentMethods(methods => methods.filter(method => method.id !== paymentMethodId));
+      toast({
+        title: "Success",
+        description: "Payment method removed successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to remove payment method",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handlePreview = (url: string) => {
     setPreviewUrl(url);
@@ -158,7 +207,36 @@ const Account = () => {
               <CardTitle>Payment Methods</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">No payment methods added yet.</p>
+              {loadingPaymentMethods ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : paymentMethods.length > 0 ? (
+                <div className="space-y-4">
+                  {paymentMethods.map((method) => (
+                    <div key={method.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <CreditCard className="h-6 w-6" />
+                        <div>
+                          <p className="font-medium">•••• {method.card.last4}</p>
+                          <p className="text-sm text-gray-500">
+                            Expires {method.card.exp_month}/{method.card.exp_year}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeletePaymentMethod(method.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No payment methods added yet.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
