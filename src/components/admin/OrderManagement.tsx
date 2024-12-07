@@ -4,8 +4,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import {
@@ -16,14 +14,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Download, Upload, Eye } from "lucide-react";
+import { Loader2, Download, Upload, Eye, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { OrderTableHeader } from "./OrderTableHeader";
+import { OrderDetailsDialog } from "./OrderDetailsDialog";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -31,6 +25,7 @@ const OrderManagement = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingOrderId, setUploadingOrderId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -162,8 +157,8 @@ const OrderManagement = () => {
     }
   };
 
-  const handlePreview = (url: string) => {
-    setPreviewUrl(url);
+  const handleViewDetails = (order: any) => {
+    setSelectedOrder(order);
   };
 
   if (loading) {
@@ -178,19 +173,7 @@ const OrderManagement = () => {
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Order Management</h2>
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Order ID</TableHead>
-            <TableHead>Customer Email</TableHead>
-            <TableHead>Product</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Payment Status</TableHead>
-            <TableHead>Keywords</TableHead>
-            <TableHead>Target URL</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Attachment</TableHead>
-          </TableRow>
-        </TableHeader>
+        <OrderTableHeader />
         <TableBody>
           {orders.map((order) => (
             <TableRow key={order.id}>
@@ -216,20 +199,15 @@ const OrderManagement = () => {
                 </Select>
               </TableCell>
               <TableCell>{order.payment_status}</TableCell>
-              <TableCell className="max-w-[200px] truncate">
-                {order.keywords || "N/A"}
-              </TableCell>
-              <TableCell className="max-w-[200px] truncate">
-                {order.target_url ? (
-                  <a 
-                    href={order.target_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    {order.target_url}
-                  </a>
-                ) : "N/A"}
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleViewDetails(order)}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  View Details
+                </Button>
               </TableCell>
               <TableCell>
                 {new Date(order.created_at).toLocaleDateString()}
@@ -241,7 +219,7 @@ const OrderManagement = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handlePreview(order.attachment_url)}
+                        onClick={() => setPreviewUrl(order.attachment_url)}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -280,30 +258,12 @@ const OrderManagement = () => {
         </TableBody>
       </Table>
 
-      <Dialog open={!!previewUrl} onOpenChange={() => setPreviewUrl(null)}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Attachment Preview</DialogTitle>
-          </DialogHeader>
-          {previewUrl && (
-            <div className="aspect-video">
-              {previewUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/) ? (
-                <img
-                  src={previewUrl}
-                  alt="Attachment preview"
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <iframe
-                  src={previewUrl}
-                  className="w-full h-full"
-                  title="Attachment preview"
-                />
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <OrderDetailsDialog
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        keywords={selectedOrder?.keywords}
+        targetUrl={selectedOrder?.target_url}
+      />
     </div>
   );
 };
