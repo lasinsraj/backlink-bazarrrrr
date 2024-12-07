@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Download, Eye } from "lucide-react";
+import { Download, Eye, Edit2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface AccountOrdersProps {
   session: Session;
@@ -21,6 +23,9 @@ export const AccountOrders = ({ session }: AccountOrdersProps) => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [editingOrder, setEditingOrder] = useState<any | null>(null);
+  const [keywords, setKeywords] = useState("");
+  const [targetUrl, setTargetUrl] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,6 +57,45 @@ export const AccountOrders = ({ session }: AccountOrdersProps) => {
     setPreviewUrl(url);
   };
 
+  const handleEdit = (order: any) => {
+    setEditingOrder(order);
+    setKeywords(order.keywords || "");
+    setTargetUrl(order.target_url || "");
+  };
+
+  const handleSaveDetails = async () => {
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({
+          keywords,
+          target_url: targetUrl,
+        })
+        .eq("id", editingOrder?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Order details updated successfully",
+      });
+
+      // Update local state
+      setOrders(orders.map(order => 
+        order.id === editingOrder?.id 
+          ? { ...order, keywords, target_url: targetUrl }
+          : order
+      ));
+      setEditingOrder(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to update order details",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -68,6 +112,23 @@ export const AccountOrders = ({ session }: AccountOrdersProps) => {
                 <p className="text-sm text-gray-500">
                   Created: {new Date(order.created_at).toLocaleDateString()}
                 </p>
+                {order.keywords && (
+                  <p className="text-sm text-gray-500">Keywords: {order.keywords}</p>
+                )}
+                {order.target_url && (
+                  <p className="text-sm text-gray-500">Target URL: {order.target_url}</p>
+                )}
+                {(!order.keywords || !order.target_url) && order.payment_status === 'completed' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(order)}
+                    className="mt-2"
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Add Details
+                  </Button>
+                )}
               </div>
               
               {order.attachment_url && (
@@ -123,6 +184,38 @@ export const AccountOrders = ({ session }: AccountOrdersProps) => {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editingOrder} onOpenChange={() => setEditingOrder(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Order Details</DialogTitle>
+            <DialogDescription>
+              Add keywords and target URL for your order
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="keywords">Keywords</Label>
+              <Input
+                id="keywords"
+                value={keywords}
+                onChange={(e) => setKeywords(e.target.value)}
+                placeholder="Enter keywords"
+              />
+            </div>
+            <div>
+              <Label htmlFor="targetUrl">Target URL</Label>
+              <Input
+                id="targetUrl"
+                value={targetUrl}
+                onChange={(e) => setTargetUrl(e.target.value)}
+                placeholder="Enter target URL"
+              />
+            </div>
+            <Button onClick={handleSaveDetails}>Save Details</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
