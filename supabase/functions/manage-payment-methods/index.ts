@@ -14,32 +14,56 @@ serve(async (req) => {
   }
 
   try {
+    // Check for Stripe secret key
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeKey) {
+      console.error('STRIPE_SECRET_KEY is not set')
+      throw new Error('Stripe configuration error')
+    }
+
     // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2022-11-15',
     })
 
+    // Get Supabase configuration
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase configuration missing')
+      throw new Error('Supabase configuration error')
+    }
+
     // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceKey)
 
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
+      console.error('No authorization header provided')
       throw new Error('No authorization header')
     }
 
     // Verify the JWT token
     const token = authHeader.replace('Bearer ', '')
+    console.log('Verifying token...')
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
     
-    if (authError || !user) {
+    if (authError) {
+      console.error('Auth error:', authError)
       throw new Error('Invalid token')
     }
+    
+    if (!user) {
+      console.error('No user found')
+      throw new Error('User not found')
+    }
+
+    console.log('User authenticated:', user.email)
 
     // Get customer for the authenticated user
+    console.log('Fetching Stripe customer...')
     const customers = await stripe.customers.list({
       email: user.email,
       limit: 1,
@@ -48,12 +72,14 @@ serve(async (req) => {
     if (req.method === 'GET') {
       // List payment methods
       if (customers.data.length === 0) {
+        console.log('No Stripe customer found for user')
         return new Response(
           JSON.stringify({ paymentMethods: [] }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
+      console.log('Fetching payment methods for customer:', customers.data[0].id)
       const paymentMethods = await stripe.paymentMethods.list({
         customer: customers.data[0].id,
         type: 'card',
@@ -74,8 +100,9 @@ serve(async (req) => {
         throw new Error('Payment method ID is required')
       }
 
+      console.log('Deleting payment method:', paymentMethodId)
       await stripe.paymentMethods.detach(paymentMethodId)
-      console.log('Deleted payment method:', paymentMethodId)
+      console.log('Successfully deleted payment method:', paymentMethodId)
 
       return new Response(
         JSON.stringify({ success: true }),
