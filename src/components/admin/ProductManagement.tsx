@@ -59,6 +59,7 @@ const ProductManagement = () => {
       
       fetchProducts();
     } catch (error: any) {
+      console.error("Error deleting product:", error);
       toast({
         title: "Error",
         description: error.message,
