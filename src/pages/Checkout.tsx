@@ -32,7 +32,7 @@ const Checkout = () => {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent, skipDetails = false) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -51,26 +51,30 @@ const Checkout = () => {
     }
 
     try {
-      const { data, error } = await supabase.from("orders").insert({
-        product_id: id,
-        user_id: session.user.id,
-        keywords: skipDetails ? null : keywords,
-        target_url: skipDetails ? null : targetUrl,
-      }).select().single();
+      // Instead of creating an order, we'll create a checkout session directly
+      const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+        body: {
+          productId: id,
+          price: product?.price,
+          email: session.user.email,
+          userId: session.user.id,
+          keywords: skipDetails ? "" : keywords,
+          targetUrl: skipDetails ? "" : targetUrl
+        },
+      });
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Your order has been created",
-      });
-      
-      // Redirect to payment page with the order ID
-      navigate(`/payment/${data.id}`);
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received");
+      }
     } catch (error: any) {
+      console.error("Payment processing error:", error);
       toast({
         title: "Error",
-        description: "There was an error processing your order",
+        description: "There was an error processing your request",
         variant: "destructive",
       });
     } finally {
@@ -101,7 +105,7 @@ const Checkout = () => {
           <div className="text-xl font-bold text-primary">${product.price}</div>
         </div>
 
-        <form onSubmit={(e) => handleSubmit(e, skipDetails)} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex items-center space-x-2 mb-4">
             <Checkbox
               id="skipDetails"
@@ -148,7 +152,7 @@ const Checkout = () => {
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />
             ) : null}
-            Continue to Payment
+            Proceed to Payment
           </Button>
         </form>
       </div>
