@@ -18,7 +18,14 @@ serve(async (req) => {
       throw new Error('Missing required parameters')
     }
 
-    console.log(`Creating checkout session for product ${productId}`)
+    console.log('Creating checkout session with params:', {
+      productId,
+      price,
+      email,
+      userId,
+      keywords,
+      targetUrl
+    });
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2022-11-15',
@@ -51,7 +58,7 @@ serve(async (req) => {
       }
     })
 
-    console.log('Checkout session created:', session.id)
+    console.log('Checkout session created:', session.id);
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
@@ -60,7 +67,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error creating payment session:', error)
+    console.error('Error creating payment session:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
