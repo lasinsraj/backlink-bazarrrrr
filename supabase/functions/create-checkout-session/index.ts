@@ -41,8 +41,8 @@ serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/#/account/orders?success=true`,
-      cancel_url: `${req.headers.get('origin')}/#/account/orders?canceled=true`,
+      success_url: `${req.headers.get('origin')}/account/orders?success=true`,
+      cancel_url: `${req.headers.get('origin')}/account/orders?canceled=true`,
       metadata: {
         userId,
         productId,

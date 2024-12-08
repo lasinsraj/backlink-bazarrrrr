@@ -44,7 +44,7 @@ serve(async (request) => {
       const metadata = session.metadata
       console.log('Session metadata:', metadata)
 
-      if (!metadata?.userId || !metadata?.productId || !metadata?.keywords || !metadata?.targetUrl) {
+      if (!metadata?.userId || !metadata?.productId) {
         console.log('Missing required metadata')
         throw new Error('Missing required metadata in session')
       }
