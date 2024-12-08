@@ -8,6 +8,7 @@ const corsHeaders = {
 }
 
 serve(async (request) => {
+  // Handle CORS preflight requests
   if (request.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -16,6 +17,7 @@ serve(async (request) => {
     const signature = request.headers.get('Stripe-Signature')
     
     if (!signature) {
+      console.error('No signature found')
       throw new Error('No signature found')
     }
 
@@ -27,13 +29,25 @@ serve(async (request) => {
 
     console.log('Verifying Stripe webhook signature...')
     
-    const event = await stripe.webhooks.constructEventAsync(
-      body,
-      signature,
-      Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET') || '',
-      undefined,
-      undefined
-    )
+    let event
+    try {
+      event = await stripe.webhooks.constructEventAsync(
+        body,
+        signature,
+        Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET') || '',
+        undefined,
+        undefined
+      )
+    } catch (err) {
+      console.error(`⚠️ Webhook signature verification failed.`, err.message)
+      return new Response(
+        JSON.stringify({ error: 'Webhook signature verification failed' }), 
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
 
     console.log(`Event received: ${event.type}`)
 
@@ -45,7 +59,7 @@ serve(async (request) => {
       console.log('Session metadata:', metadata)
 
       if (!metadata?.userId || !metadata?.productId) {
-        console.log('Missing required metadata')
+        console.error('Missing required metadata:', metadata)
         throw new Error('Missing required metadata in session')
       }
 
