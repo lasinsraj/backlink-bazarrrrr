@@ -1,3 +1,4 @@
+# Project configs
 project_id = "rsgdmshodeqrgoqnfjvh"
 
 [api]
@@ -12,6 +13,15 @@ port = 54322
 enabled = true
 port = 54323
 
+# Function configs
 [[functions]]
-name = "create-checkout-session"
 verify_jwt = true
+name = "create-checkout-session"
+
+[[functions]]
+verify_jwt = true
+name = "manage-payment-methods"
+
+[[functions]]
+verify_jwt = false
+name = "stripe-webhook"
