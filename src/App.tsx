@@ -24,22 +24,29 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, isLoading } = useSessionContext();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
-    const handleError = () => {
-      toast({
-        title: "Session expired",
-        description: "Please sign in again",
-        variant: "destructive",
-      });
+    const handleAuthChange = async (event: string, currentSession: any) => {
+      console.log("Auth event:", event);
+      
+      if (event === 'TOKEN_REFRESHED' && !currentSession) {
+        console.log("Token refresh failed");
+        toast({
+          title: "Session expired",
+          description: "Please sign in again",
+          variant: "destructive",
+        });
+        navigate('/auth');
+      }
     };
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'TOKEN_REFRESHED' && !session) {
-        handleError();
-      }
-    });
-  }, [toast]);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast, navigate]);
 
   if (isLoading) {
     return null;
