@@ -28,7 +28,7 @@ serve(async (request) => {
     }
 
     const body = await request.text();
-    console.log('Request body length:', body.length);
+    console.log('Request body received, length:', body.length);
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2022-11-15',
@@ -97,22 +97,52 @@ serve(async (request) => {
         break;
       }
 
+      case 'charge.succeeded': {
+        const charge = event.data.object;
+        console.log('Charge succeeded:', charge.id);
+        
+        // Update order payment status if needed
+        if (charge.payment_intent) {
+          const { data: sessions, error: sessionsError } = await supabase
+            .from('orders')
+            .select('id')
+            .eq('stripe_session_id', charge.payment_intent);
+
+          if (sessionsError) {
+            console.error('Error finding order:', sessionsError);
+            throw sessionsError;
+          }
+
+          if (sessions && sessions.length > 0) {
+            const { error: updateError } = await supabase
+              .from('orders')
+              .update({ payment_status: 'completed' })
+              .eq('stripe_session_id', charge.payment_intent);
+
+            if (updateError) {
+              console.error('Error updating order payment status:', updateError);
+              throw updateError;
+            }
+            console.log('Order payment status updated to completed');
+          }
+        }
+        break;
+      }
+
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object;
         console.log('Payment intent succeeded:', paymentIntent.id);
         
-        // Update order payment status if needed
-        if (paymentIntent.metadata?.orderId) {
-          const { error: updateError } = await supabase
-            .from('orders')
-            .update({ payment_status: 'completed' })
-            .eq('id', paymentIntent.metadata.orderId);
+        const { error: updateError } = await supabase
+          .from('orders')
+          .update({ payment_status: 'completed' })
+          .eq('stripe_session_id', paymentIntent.id);
 
-          if (updateError) {
-            console.error('Error updating order payment status:', updateError);
-            throw updateError;
-          }
+        if (updateError) {
+          console.error('Error updating order payment status:', updateError);
+          throw updateError;
         }
+        console.log('Order payment status updated for payment intent:', paymentIntent.id);
         break;
       }
 
@@ -120,17 +150,16 @@ serve(async (request) => {
         const paymentIntent = event.data.object;
         console.log('Payment failed:', paymentIntent.id);
         
-        if (paymentIntent.metadata?.orderId) {
-          const { error: updateError } = await supabase
-            .from('orders')
-            .update({ payment_status: 'failed' })
-            .eq('id', paymentIntent.metadata.orderId);
+        const { error: updateError } = await supabase
+          .from('orders')
+          .update({ payment_status: 'failed' })
+          .eq('stripe_session_id', paymentIntent.id);
 
-          if (updateError) {
-            console.error('Error updating order payment status:', updateError);
-            throw updateError;
-          }
+        if (updateError) {
+          console.error('Error updating order payment status:', updateError);
+          throw updateError;
         }
+        console.log('Order payment status updated to failed');
         break;
       }
 
