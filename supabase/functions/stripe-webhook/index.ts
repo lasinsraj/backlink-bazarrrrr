@@ -1,11 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from 'https://esm.sh/stripe@11.1.0?target=deno'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { 
+  corsHeaders, 
+  logWebhookEvent, 
+  createErrorResponse, 
+  createSuccessResponse 
+} from './utils.ts'
+import {
+  handleCheckoutSession,
+  handlePaymentIntent,
+  handleCharge
+} from './handlers.ts'
 
 serve(async (request) => {
   console.log('🚀 Webhook function started');
@@ -23,14 +28,12 @@ serve(async (request) => {
     console.log('Stripe signature:', signature ? 'Present' : 'Missing');
 
     if (!signature) {
-      console.error('❌ No Stripe signature found in request headers');
-      throw new Error('No Stripe signature found in request headers');
+      return createErrorResponse('No Stripe signature found in request headers');
     }
 
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET');
     if (!webhookSecret) {
-      console.error('❌ Webhook secret not configured');
-      throw new Error('Webhook secret not configured in environment variables');
+      return createErrorResponse('Webhook secret not configured');
     }
 
     const body = await request.text();
@@ -47,159 +50,40 @@ serve(async (request) => {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
       console.log('✅ Event constructed successfully');
-      console.log('Event type:', event.type);
-      console.log('Event ID:', event.id);
+      logWebhookEvent(event);
     } catch (err) {
       console.error('❌ Webhook signature verification failed:', err.message);
-      return new Response(
-        JSON.stringify({ error: `Webhook signature verification failed: ${err.message}` }), 
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400
-        }
-      );
+      return createErrorResponse(`Webhook signature verification failed: ${err.message}`);
     }
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('❌ Supabase credentials not configured');
-      throw new Error('Supabase credentials not configured');
-    }
-
-    console.log('🔌 Initializing Supabase client');
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Handle different event types
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object;
-        console.log('💰 Processing completed checkout session:', session.id);
-        console.log('Session metadata:', session.metadata);
-        
-        const metadata = session.metadata;
-        if (!metadata?.userId || !metadata?.productId) {
-          console.error('❌ Missing required metadata:', metadata);
-          throw new Error('Missing required metadata in session');
-        }
-
-        console.log('Creating order in database...');
-        const { data: order, error: orderError } = await supabase
-          .from('orders')
-          .insert({
-            user_id: metadata.userId,
-            product_id: metadata.productId,
-            payment_status: 'completed',
-            status: 'pending',
-            stripe_session_id: session.id,
-            keywords: metadata.keywords || null,
-            target_url: metadata.targetUrl || null
-          })
-          .select()
-          .single();
-
-        if (orderError) {
-          console.error('❌ Error creating order:', orderError);
-          throw orderError;
-        }
-
-        console.log('✅ Order created successfully:', order);
+      case 'checkout.session.completed':
+        await handleCheckoutSession(event.data.object);
         break;
-      }
 
-      case 'charge.succeeded': {
-        const charge = event.data.object;
-        console.log('💳 Charge succeeded:', charge.id);
-        console.log('Payment intent:', charge.payment_intent);
-        
-        if (charge.payment_intent) {
-          console.log('Looking for order with stripe_session_id:', charge.payment_intent);
-          const { data: sessions, error: sessionsError } = await supabase
-            .from('orders')
-            .select('id')
-            .eq('stripe_session_id', charge.payment_intent);
-
-          if (sessionsError) {
-            console.error('❌ Error finding order:', sessionsError);
-            throw sessionsError;
-          }
-
-          console.log('Found orders:', sessions);
-
-          if (sessions && sessions.length > 0) {
-            console.log('Updating order payment status...');
-            const { error: updateError } = await supabase
-              .from('orders')
-              .update({ payment_status: 'completed' })
-              .eq('stripe_session_id', charge.payment_intent);
-
-            if (updateError) {
-              console.error('❌ Error updating order payment status:', updateError);
-              throw updateError;
-            }
-            console.log('✅ Order payment status updated to completed');
-          }
-        }
+      case 'charge.succeeded':
+        await handleCharge(event.data.object);
         break;
-      }
 
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        console.log('💰 Payment intent succeeded:', paymentIntent.id);
-        
-        console.log('Updating order payment status...');
-        const { error: updateError } = await supabase
-          .from('orders')
-          .update({ payment_status: 'completed' })
-          .eq('stripe_session_id', paymentIntent.id);
-
-        if (updateError) {
-          console.error('❌ Error updating order payment status:', updateError);
-          throw updateError;
-        }
-        console.log('✅ Order payment status updated for payment intent:', paymentIntent.id);
+      case 'payment_intent.succeeded':
+        await handlePaymentIntent(event.data.object, 'completed');
         break;
-      }
 
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        console.log('❌ Payment failed:', paymentIntent.id);
-        
-        console.log('Updating order payment status to failed...');
-        const { error: updateError } = await supabase
-          .from('orders')
-          .update({ payment_status: 'failed' })
-          .eq('stripe_session_id', paymentIntent.id);
-
-        if (updateError) {
-          console.error('❌ Error updating order payment status:', updateError);
-          throw updateError;
-        }
-        console.log('✅ Order payment status updated to failed');
+      case 'payment_intent.payment_failed':
+        await handlePaymentIntent(event.data.object, 'failed');
         break;
-      }
 
       default:
         console.log('⚠️ Unhandled event type:', event.type);
     }
 
     console.log('✅ Webhook processing completed successfully');
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200
-    });
+    return createSuccessResponse();
 
   } catch (error) {
     console.error('❌ Error processing webhook:', error);
     console.error('Error stack:', error.stack);
-    return new Response(
-      JSON.stringify({ error: error.message }), 
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400
-      }
-    );
+    return createErrorResponse(error.message);
   }
 });
