@@ -7,15 +7,19 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    console.log('Handling CORS preflight request');
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { productId, price, email, userId, keywords, targetUrl } = await req.json()
+    console.log('Starting checkout session creation');
+    const { productId, price, email, userId, keywords, targetUrl } = await req.json();
     
     if (!productId || !price || !email || !userId) {
-      throw new Error('Missing required parameters')
+      console.error('Missing required parameters:', { productId, price, email, userId });
+      throw new Error('Missing required parameters');
     }
 
     console.log('Creating checkout session with params:', {
@@ -30,7 +34,7 @@ serve(async (req) => {
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2022-11-15',
       httpClient: Stripe.createFetchHttpClient(),
-    })
+    });
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -56,16 +60,16 @@ serve(async (req) => {
         keywords: keywords || '',
         targetUrl: targetUrl || ''
       }
-    })
+    });
 
-    console.log('Checkout session created:', session.id);
+    console.log('Checkout session created successfully:', session.id);
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       },
-    )
+    );
   } catch (error) {
     console.error('Error creating payment session:', error);
     return new Response(
@@ -74,6 +78,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       },
-    )
+    );
   }
-})
+});

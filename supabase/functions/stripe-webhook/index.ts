@@ -18,7 +18,7 @@ serve(async (request) => {
   }
 
   try {
-    const signature = request.headers.get('Stripe-Signature');
+    const signature = request.headers.get('stripe-signature');
     console.log('Stripe signature present:', !!signature);
     
     if (!signature) {
@@ -27,25 +27,26 @@ serve(async (request) => {
     }
 
     const body = await request.text();
-    console.log('Request body length:', body.length);
+    console.log('Request body received, length:', body.length);
     
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2022-11-15',
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    console.log('Stripe initialized, verifying webhook signature...');
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET');
-    console.log('Webhook secret present:', !!webhookSecret);
-    
+    if (!webhookSecret) {
+      console.error('Webhook secret not configured');
+      throw new Error('Webhook secret not configured');
+    }
+
+    console.log('Verifying webhook signature...');
     let event;
     try {
-      event = await stripe.webhooks.constructEventAsync(
+      event = stripe.webhooks.constructEvent(
         body,
         signature,
-        webhookSecret || '',
-        undefined,
-        undefined
+        webhookSecret
       );
       console.log('Event constructed successfully:', event.type);
     } catch (err) {
@@ -53,19 +54,28 @@ serve(async (request) => {
       return new Response(
         JSON.stringify({ error: 'Webhook signature verification failed' }), 
         { 
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
         }
       );
     }
 
-    console.log(`Processing event type: ${event.type}`);
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Supabase credentials not configured');
+      throw new Error('Supabase credentials not configured');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase client initialized');
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log('Checkout session ID:', session.id);
+      console.log('Processing completed checkout session:', session.id);
       
-      // Get the metadata from the session
       const metadata = session.metadata;
       console.log('Session metadata:', metadata);
 
@@ -74,20 +84,7 @@ serve(async (request) => {
         throw new Error('Missing required metadata in session');
       }
 
-      // Initialize Supabase client
-      console.log('Initializing Supabase client...');
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-      console.log('Supabase credentials present:', !!supabaseUrl && !!supabaseKey);
-
-      const supabase = createClient(
-        supabaseUrl || '',
-        supabaseKey || ''
-      );
-
       console.log('Creating order in database...');
-      
-      // Create the order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -110,7 +107,7 @@ serve(async (request) => {
       console.log('Order created successfully:', order);
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ received: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
     });
