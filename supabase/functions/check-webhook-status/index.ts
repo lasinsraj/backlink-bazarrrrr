@@ -13,6 +13,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Checking webhook status - request received')
+
     // Get the Stripe secret key from environment variables
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeKey) {
@@ -35,6 +37,7 @@ serve(async (req) => {
 
     const { webhookUrl } = body
     if (!webhookUrl) {
+      console.error('No webhook URL provided')
       throw new Error('Webhook URL is required')
     }
 
@@ -51,28 +54,20 @@ serve(async (req) => {
 
     console.log('Webhook status:', webhook ? 'found' : 'not found')
 
-    if (webhook && webhook.status === 'enabled') {
-      return new Response(
-        JSON.stringify({
+    const response = webhook && webhook.status === 'enabled'
+      ? {
           active: true,
           message: 'Webhook is properly configured and active',
-        }),
-        { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json' 
-          } 
         }
-      )
-    }
+      : {
+          active: false,
+          message: webhook 
+            ? 'Webhook exists but is not enabled'
+            : 'Webhook is not configured',
+        }
 
     return new Response(
-      JSON.stringify({
-        active: false,
-        message: webhook 
-          ? 'Webhook exists but is not enabled'
-          : 'Webhook is not configured',
-      }),
+      JSON.stringify(response),
       { 
         headers: { 
           ...corsHeaders, 
@@ -83,6 +78,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error checking webhook status:', error)
+    
     return new Response(
       JSON.stringify({
         active: false,
