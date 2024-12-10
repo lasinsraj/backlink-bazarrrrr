@@ -12,6 +12,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Updating Stripe keys - request received')
+
     // Get Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -83,9 +85,9 @@ serve(async (req) => {
         console.error(`Failed to update ${secret.name}:`, errorText)
         throw new Error(`Failed to update ${secret.name}`)
       }
-    }
 
-    console.log('Successfully updated Stripe configuration')
+      console.log(`Successfully updated ${secret.name}`)
+    }
 
     return new Response(
       JSON.stringify({ success: true }),
