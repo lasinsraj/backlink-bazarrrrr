@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Globe, DollarSign, Award, TrendingUp } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProductInfoProps {
   product: {
@@ -33,11 +32,11 @@ const ProductInfo = ({ product, onBuyClick }: ProductInfoProps) => {
         </p>
       </div>
 
-      <ScrollArea className="h-[200px] rounded-md border p-4">
+      <div className="rounded-md border p-4">
         <div className="prose max-w-none">
           {formattedDescription}
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {product.features?.map((feature, index) => (
