@@ -15,6 +15,11 @@ interface ProductInfoProps {
 }
 
 const ProductInfo = ({ product, onBuyClick }: ProductInfoProps) => {
+  // Format description to add proper spacing
+  const formattedDescription = product.description?.split('\n').map((paragraph, index) => (
+    <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
+  ));
+
   return (
     <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
       <div>
@@ -30,7 +35,7 @@ const ProductInfo = ({ product, onBuyClick }: ProductInfoProps) => {
 
       <ScrollArea className="h-[200px] rounded-md border p-4">
         <div className="prose max-w-none">
-          <p className="text-gray-600 leading-relaxed">{product.description}</p>
+          {formattedDescription}
         </div>
       </ScrollArea>
 
