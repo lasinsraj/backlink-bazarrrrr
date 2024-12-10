@@ -7,6 +7,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -70,23 +71,29 @@ serve(async (req) => {
     console.log('Attempting to update Stripe secrets')
 
     for (const secret of secrets) {
-      const response = await fetch(managementApiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseServiceKey}`,
-          'apikey': supabaseServiceKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(secret)
-      })
+      try {
+        const response = await fetch(managementApiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'apikey': supabaseServiceKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(secret)
+        })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error(`Failed to update ${secret.name}:`, errorText)
+        const responseText = await response.text()
+        console.log(`Response for ${secret.name}:`, responseText)
+
+        if (!response.ok) {
+          throw new Error(`Failed to update ${secret.name}: ${responseText}`)
+        }
+
+        console.log(`Successfully updated ${secret.name}`)
+      } catch (error) {
+        console.error(`Error updating ${secret.name}:`, error)
         throw new Error(`Failed to update ${secret.name}`)
       }
-
-      console.log(`Successfully updated ${secret.name}`)
     }
 
     return new Response(
