@@ -50,10 +50,38 @@ serve(async (req) => {
     // Get the keys from request body
     const { publishableKey, secretKey, webhookSecret } = await req.json()
 
-    // Update the secrets in Supabase
-    await Deno.env.set('STRIPE_SECRET_KEY', secretKey)
-    await Deno.env.set('STRIPE_WEBHOOK_SIGNING_SECRET', webhookSecret)
-    // Note: Publishable key can be stored in the frontend as it's public
+    if (!publishableKey || !secretKey || !webhookSecret) {
+      throw new Error('Missing required keys')
+    }
+
+    // Update environment variables
+    const updates = {
+      STRIPE_SECRET_KEY: secretKey,
+      STRIPE_WEBHOOK_SIGNING_SECRET: webhookSecret,
+    }
+
+    // Log the update attempt
+    console.log('Attempting to update Stripe configuration')
+
+    // Update each secret
+    for (const [key, value] of Object.entries(updates)) {
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/secrets`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: key, value }),
+        }
+      )
+
+      if (!response.ok) {
+        console.error(`Failed to update ${key}:`, await response.text())
+        throw new Error(`Failed to update ${key}`)
+      }
+    }
 
     console.log('Successfully updated Stripe configuration')
 

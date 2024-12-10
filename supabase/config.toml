@@ -13,18 +13,15 @@ port = 54322
 enabled = true
 port = 54323
 
-[[functions]]
-name = "create-checkout-session"
+[functions]
+[functions.update-stripe-keys]
 verify_jwt = true
 
-[[functions]]
-name = "manage-payment-methods"
+[functions.create-checkout-session]
 verify_jwt = true
 
-[[functions]]
-name = "stripe-webhook"
+[functions.manage-payment-methods]
+verify_jwt = true
+
+[functions.stripe-webhook]
 verify_jwt = false
-
-[[functions]]
-name = "update-stripe-keys"
-verify_jwt = true
