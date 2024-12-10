@@ -1,89 +1,87 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from 'https://esm.sh/stripe@11.1.0?target=deno'
-import { 
-  corsHeaders, 
-  logWebhookEvent, 
-  createErrorResponse, 
-  createSuccessResponse 
-} from './utils.ts'
-import {
-  handleCheckoutSession,
-  handlePaymentIntent,
-  handleCharge
-} from './handlers.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 
-serve(async (request) => {
-  console.log('🚀 Webhook function started');
-  console.log('Request method:', request.method);
-  console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
+  }
 
   try {
-    // Handle CORS preflight requests
-    if (request.method === 'OPTIONS') {
-      console.log('Handling CORS preflight request');
-      return new Response(null, { headers: corsHeaders });
-    }
-
-    const signature = request.headers.get('stripe-signature');
-    console.log('Stripe signature:', signature ? 'Present' : 'Missing');
-
+    const signature = req.headers.get('stripe-signature')
     if (!signature) {
-      return createErrorResponse('No Stripe signature found in request headers');
+      throw new Error('No Stripe signature found')
     }
 
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET');
+    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET')
     if (!webhookSecret) {
-      return createErrorResponse('Webhook secret not configured');
+      throw new Error('Webhook secret not configured')
     }
-
-    const body = await request.text();
-    console.log('📝 Request body received');
-    console.log('Body length:', body.length);
-    console.log('Raw body preview:', body.substring(0, 200) + '...');
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2022-11-15',
       httpClient: Stripe.createFetchHttpClient(),
-    });
+    })
 
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      console.log('✅ Event constructed successfully');
-      logWebhookEvent(event);
-    } catch (err) {
-      console.error('❌ Webhook signature verification failed:', err.message);
-      return createErrorResponse(`Webhook signature verification failed: ${err.message}`);
+    const body = await req.text()
+    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+
+    console.log('Received webhook event:', event.type)
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') || '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+    )
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object
+      console.log('Processing completed checkout session:', session.id)
+
+      // Extract metadata from the session
+      const { userId, productId, keywords, targetUrl } = session.metadata || {}
+      
+      if (!userId || !productId) {
+        throw new Error('Missing required metadata')
+      }
+
+      // Create the order
+      const { error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: userId,
+          product_id: productId,
+          status: 'pending',
+          payment_status: 'completed',
+          stripe_session_id: session.id,
+          keywords: keywords || null,
+          target_url: targetUrl || null,
+        })
+
+      if (orderError) {
+        console.error('Error creating order:', orderError)
+        throw orderError
+      }
+
+      console.log('Successfully created order for session:', session.id)
     }
 
-    // Handle different event types
-    switch (event.type) {
-      case 'checkout.session.completed':
-        await handleCheckoutSession(event.data.object);
-        break;
-
-      case 'charge.succeeded':
-        await handleCharge(event.data.object);
-        break;
-
-      case 'payment_intent.succeeded':
-        await handlePaymentIntent(event.data.object, 'completed');
-        break;
-
-      case 'payment_intent.payment_failed':
-        await handlePaymentIntent(event.data.object, 'failed');
-        break;
-
-      default:
-        console.log('⚠️ Unhandled event type:', event.type);
-    }
-
-    console.log('✅ Webhook processing completed successfully');
-    return createSuccessResponse();
+    return new Response(JSON.stringify({ received: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
 
   } catch (error) {
-    console.error('❌ Error processing webhook:', error);
-    console.error('Error stack:', error.stack);
-    return createErrorResponse(error.message);
+    console.error('Error processing webhook:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      }
+    )
   }
-});
+})

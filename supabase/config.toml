@@ -23,5 +23,8 @@ verify_jwt = true
 [functions.manage-payment-methods]
 verify_jwt = true
 
+[functions.check-webhook-status]
+verify_jwt = true
+
 [functions.stripe-webhook]
 verify_jwt = false
