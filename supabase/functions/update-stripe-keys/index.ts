@@ -59,7 +59,7 @@ serve(async (req) => {
     }
 
     // Update secrets using the Management API
-    const managementApiUrl = `${supabaseUrl}/functions/v1/secrets`
+    const managementApiUrl = `${supabaseUrl}/rest/v1/secrets`
     const secrets = [
       { name: 'STRIPE_SECRET_KEY', value: secretKey },
       { name: 'STRIPE_WEBHOOK_SIGNING_SECRET', value: webhookSecret }
@@ -72,6 +72,7 @@ serve(async (req) => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${supabaseServiceKey}`,
+          'apikey': supabaseServiceKey,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(secret)
