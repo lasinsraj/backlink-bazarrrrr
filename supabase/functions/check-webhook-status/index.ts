@@ -7,25 +7,49 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    // Get the Stripe secret key from environment variables
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeKey) {
+      console.error('Stripe secret key not found')
+      throw new Error('Stripe configuration missing')
+    }
+
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2022-11-15',
       httpClient: Stripe.createFetchHttpClient(),
     })
 
-    const { webhookUrl } = await req.json()
+    let body;
+    try {
+      body = await req.json()
+    } catch (e) {
+      console.error('Error parsing request body:', e)
+      throw new Error('Invalid request body')
+    }
+
+    const { webhookUrl } = body
+    if (!webhookUrl) {
+      throw new Error('Webhook URL is required')
+    }
+
+    console.log('Checking webhook status for URL:', webhookUrl)
 
     // Get all webhook endpoints
     const webhookEndpoints = await stripe.webhookEndpoints.list()
+    console.log('Found webhook endpoints:', webhookEndpoints.data.length)
     
     // Check if our webhook URL is configured and enabled
     const webhook = webhookEndpoints.data.find(
       endpoint => endpoint.url === webhookUrl
     )
+
+    console.log('Webhook status:', webhook ? 'found' : 'not found')
 
     if (webhook && webhook.status === 'enabled') {
       return new Response(
@@ -33,7 +57,12 @@ serve(async (req) => {
           active: true,
           message: 'Webhook is properly configured and active',
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          } 
+        }
       )
     }
 
@@ -44,7 +73,12 @@ serve(async (req) => {
           ? 'Webhook exists but is not enabled'
           : 'Webhook is not configured',
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     )
 
   } catch (error) {
@@ -52,10 +86,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         active: false,
-        message: error.message,
+        message: error.message || 'Failed to check webhook status',
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
         status: 400,
       }
     )
