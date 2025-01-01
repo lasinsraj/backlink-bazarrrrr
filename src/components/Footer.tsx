@@ -31,6 +31,11 @@ const Footer = () => {
                   Blog Comments
                 </Link>
               </li>
+              <li>
+                <Link to="/sitemap.xml" className="text-slate-600 hover:text-primary transition-colors">
+                  Sitemap
+                </Link>
+              </li>
             </ul>
           </div>
           
