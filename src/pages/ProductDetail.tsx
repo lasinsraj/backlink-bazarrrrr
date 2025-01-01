@@ -20,6 +20,11 @@ const ProductDetail = () => {
     return uuidRegex.test(str);
   };
 
+  // Function to convert slug back to a searchable title
+  const slugToTitle = (slug: string) => {
+    return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  };
+
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ["product", slug],
     queryFn: async () => {
@@ -28,21 +33,19 @@ const ProductDetail = () => {
         return null;
       }
 
-      let query = supabase
-        .from("products")
-        .select("*, user_id");
+      let query = supabase.from("products").select("*, user_id");
 
       // If it's a UUID, query by ID, otherwise query by title
       if (isUUID(slug)) {
         query = query.eq('id', slug);
       } else {
-        // Convert slug back to title format for comparison
-        const titleFromSlug = slug.replace(/-/g, ' ');
+        const titleFromSlug = slugToTitle(slug);
+        // Use ilike for case-insensitive matching and exact title match
         query = query.ilike('title', titleFromSlug);
       }
 
       const { data, error } = await query.maybeSingle();
-      
+
       if (error) {
         console.error('Error fetching product:', error);
         toast({
@@ -55,12 +58,14 @@ const ProductDetail = () => {
       }
 
       if (!data) {
+        console.log('No product found for slug:', slug);
         navigate('/404', { replace: true });
         return null;
       }
 
       return data;
     },
+    retry: false // Don't retry on 404s
   });
 
   if (productLoading) {
@@ -72,7 +77,7 @@ const ProductDetail = () => {
   }
 
   if (!product) {
-    return <div>Product not found</div>;
+    return null; // Navigation will handle this case
   }
 
   const defaultImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80";
