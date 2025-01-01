@@ -27,6 +27,7 @@ const SEO = () => {
       <meta name="revisit-after" content="7 days" />
       <meta name="author" content="Backlink Bazaar" />
       <link rel="canonical" href="https://backlinkbazaar.com/" />
+      <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     </Helmet>
   );
 };

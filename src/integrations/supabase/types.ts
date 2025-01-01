@@ -183,6 +183,24 @@ export type Database = {
           },
         ]
       }
+      sitemap_status: {
+        Row: {
+          id: string
+          last_updated: string | null
+          needs_update: boolean | null
+        }
+        Insert: {
+          id?: string
+          last_updated?: string | null
+          needs_update?: boolean | null
+        }
+        Update: {
+          id?: string
+          last_updated?: string | null
+          needs_update?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
