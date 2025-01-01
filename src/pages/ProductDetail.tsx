@@ -14,26 +14,51 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const { session } = useSessionContext();
 
+  // Function to check if string is a UUID
+  const isUUID = (str: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
+
   const { data: product, isLoading: productLoading } = useQuery({
     queryKey: ["product", slug],
     queryFn: async () => {
-      // Convert slug back to title format for comparison
-      const titleFromSlug = slug?.replace(/-/g, ' ');
-      
-      const { data, error } = await supabase
+      if (!slug) {
+        navigate('/404', { replace: true });
+        return null;
+      }
+
+      let query = supabase
         .from("products")
-        .select("*, user_id")
-        .ilike('title', titleFromSlug || '')
-        .single();
+        .select("*, user_id");
+
+      // If it's a UUID, query by ID, otherwise query by title
+      if (isUUID(slug)) {
+        query = query.eq('id', slug);
+      } else {
+        // Convert slug back to title format for comparison
+        const titleFromSlug = slug.replace(/-/g, ' ');
+        query = query.ilike('title', titleFromSlug);
+      }
+
+      const { data, error } = await query.maybeSingle();
       
       if (error) {
-        if (error.code === 'PGRST116') {
-          // No match found
-          navigate('/404', { replace: true });
-          return null;
-        }
-        throw error;
+        console.error('Error fetching product:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load product details",
+          variant: "destructive",
+        });
+        navigate('/404', { replace: true });
+        return null;
       }
+
+      if (!data) {
+        navigate('/404', { replace: true });
+        return null;
+      }
+
       return data;
     },
   });
