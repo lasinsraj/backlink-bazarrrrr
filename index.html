@@ -24,6 +24,75 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+
+    <!-- Structured Data for Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Backlink Bazaar",
+      "description": "Premium quality backlinks marketplace offering high-authority guest posts and link building services.",
+      "url": "https://backlinkbazaar.com",
+      "logo": "/og-image.svg",
+      "sameAs": [
+        "https://twitter.com/backlinkbazaar",
+        "https://facebook.com/backlinkbazaar",
+        "https://linkedin.com/company/backlinkbazaar"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "support@backlinkbazaar.com"
+      }
+    }
+    </script>
+
+    <!-- Structured Data for WebSite -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Backlink Bazaar",
+      "url": "https://backlinkbazaar.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://backlinkbazaar.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- Structured Data for Product List -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": [
+        {
+          "@type": "Product",
+          "name": "High Authority Guest Posts",
+          "description": "Premium guest posting service on high domain authority websites",
+          "offers": {
+            "@type": "AggregateOffer",
+            "lowPrice": "50",
+            "highPrice": "500",
+            "priceCurrency": "USD"
+          }
+        },
+        {
+          "@type": "Product",
+          "name": "Niche Backlinks Package",
+          "description": "Targeted backlinks from niche-relevant websites",
+          "offers": {
+            "@type": "AggregateOffer",
+            "lowPrice": "99",
+            "highPrice": "999",
+            "priceCurrency": "USD"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
 
   <body>
