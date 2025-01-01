@@ -33,6 +33,13 @@ const BacklinkCard = ({
 
   const defaultImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80";
 
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
   return (
     <div className={`bg-card rounded-lg border p-6 transition-all duration-200 hover:shadow-lg animate-[fade-in_0.2s_ease-out] ${isSponsored ? 'border-primary/20' : ''}`}>
       {isSponsored && (
@@ -90,7 +97,7 @@ const BacklinkCard = ({
             Review
           </Button>
         </div>
-        <Button onClick={() => navigate(`/product/${id}`)}>
+        <Button onClick={() => navigate(`/product/${generateSlug(title)}`)}>
           View Details
         </Button>
       </div>

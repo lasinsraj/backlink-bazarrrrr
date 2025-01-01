@@ -9,21 +9,31 @@ import ProductReviews from "@/components/product/ProductReviews";
 import ProductChat from "@/components/product/ProductChat";
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { session } = useSessionContext();
 
   const { data: product, isLoading: productLoading } = useQuery({
-    queryKey: ["product", id],
+    queryKey: ["product", slug],
     queryFn: async () => {
+      // Convert slug back to title format for comparison
+      const titleFromSlug = slug?.replace(/-/g, ' ');
+      
       const { data, error } = await supabase
         .from("products")
         .select("*, user_id")
-        .eq("id", id)
+        .ilike('title', titleFromSlug || '')
         .single();
       
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No match found
+          navigate('/404', { replace: true });
+          return null;
+        }
+        throw error;
+      }
       return data;
     },
   });
@@ -46,7 +56,6 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Left Column: Image */}
           <div className="relative h-[300px] md:h-[500px] rounded-lg overflow-hidden bg-white shadow-sm">
             <img 
               src={product.image_url || defaultImage}
@@ -59,16 +68,14 @@ const ProductDetail = () => {
             />
           </div>
 
-          {/* Right Column: Product Info and Chat */}
           <div className="space-y-6">
-            <ProductInfo product={product} onBuyClick={() => navigate(`/checkout/${id}`)} />
-            <ProductChat productId={id!} />
+            <ProductInfo product={product} onBuyClick={() => navigate(`/checkout/${product.id}`)} />
+            <ProductChat productId={product.id} />
           </div>
         </div>
 
-        {/* Reviews Section */}
         <div className="mt-12">
-          <ProductReviews productId={id!} />
+          <ProductReviews productId={product.id} />
         </div>
       </div>
     </div>

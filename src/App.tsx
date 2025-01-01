@@ -86,7 +86,7 @@ const AppRoutes = () => {
             path="/auth" 
             element={session ? <Navigate to="/" replace /> : <Auth />} 
           />
-          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
           <Route 
             path="/checkout/:id" 
             element={
