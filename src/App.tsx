@@ -19,7 +19,20 @@ import AdminPanel from "./pages/AdminPanel";
 import EditProduct from "./pages/EditProduct";
 import Shop from "./pages/Shop";
 
-const queryClient = new QueryClient();
+// Configure QueryClient with proper error handling
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        // Don't retry on 404s
+        if (error?.status === 404) return false;
+        // Retry up to 3 times on other errors
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { session, isLoading } = useSessionContext();
@@ -114,6 +127,7 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <Footer />
