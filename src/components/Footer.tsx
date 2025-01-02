@@ -22,19 +22,19 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/category/keyword-rank" className="text-slate-600 hover:text-primary transition-colors">
-                  Keyword Rank
+                <Link to="/shop" className="text-slate-600 hover:text-primary transition-colors">
+                  Shop
                 </Link>
               </li>
               <li>
-                <Link to="/category/blog-comments" className="text-slate-600 hover:text-primary transition-colors">
-                  Blog Comments
-                </Link>
-              </li>
-              <li>
-                <Link to="/sitemap.xml" className="text-slate-600 hover:text-primary transition-colors">
+                <a 
+                  href="/sitemap.xml" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-slate-600 hover:text-primary transition-colors"
+                >
                   Sitemap
-                </Link>
+                </a>
               </li>
             </ul>
           </div>

@@ -51,7 +51,7 @@ serve(async (req) => {
     <priority>0.5</priority>
   </url>`;
 
-    // Add product URLs
+    // Add product URLs with slugs
     for (const product of products) {
       const slug = generateSlug(product.title);
       const lastmod = new Date(product.created_at).toISOString().split('T')[0];
@@ -66,7 +66,7 @@ serve(async (req) => {
 
     sitemap += '\n</urlset>';
 
-    // Update sitemap.xml in the public folder
+    // Store the sitemap in public folder
     const encoder = new TextEncoder();
     const data = encoder.encode(sitemap);
 
@@ -80,7 +80,7 @@ serve(async (req) => {
 
     if (storageError) throw storageError;
 
-    // Mark sitemap as updated
+    // Update sitemap status
     const { error: updateError } = await supabase
       .from('sitemap_status')
       .update({ needs_update: false, last_updated: new Date().toISOString() })
@@ -88,11 +88,14 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
+    console.log('Sitemap generated and stored successfully');
+
     return new Response(
       JSON.stringify({ success: true, message: 'Sitemap updated successfully' }),
       { headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    console.error('Error generating sitemap:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
