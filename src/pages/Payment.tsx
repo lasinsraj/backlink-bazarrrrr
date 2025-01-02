@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, CreditCard } from "lucide-react";
+import { Loader2, CreditCard, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useSessionContext } from "@supabase/auth-helpers-react";
@@ -17,6 +17,30 @@ const Payment = () => {
   const [error, setError] = useState<string | null>(null);
   const { session } = useSessionContext();
   const [userEmail, setUserEmail] = useState<string>("");
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'success' | 'error'>('pending');
+
+  useEffect(() => {
+    // Check URL parameters for payment status
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const canceled = urlParams.get('canceled');
+
+    if (success === 'true') {
+      setPaymentStatus('success');
+      toast({
+        title: "Payment successful!",
+        description: "Your order has been processed successfully.",
+        variant: "default",
+      });
+    } else if (canceled === 'true') {
+      setPaymentStatus('error');
+      toast({
+        title: "Payment canceled",
+        description: "Your payment was not completed.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -52,15 +76,6 @@ const Payment = () => {
     setError(null);
     
     try {
-      console.log("Creating checkout session with params:", {
-        productId: order?.products?.id,
-        price: order?.products?.price,
-        email: userEmail,
-        userId: session?.user?.id,
-        keywords: order?.keywords,
-        targetUrl: order?.target_url
-      });
-
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: {
           productId: order?.products?.id,
@@ -72,10 +87,7 @@ const Payment = () => {
         },
       });
 
-      if (error) {
-        console.error("Payment error:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (data?.url) {
         window.location.href = data.url;
@@ -100,7 +112,12 @@ const Payment = () => {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Please sign in to access this page</p>
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Please sign in to access this page
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
       </div>
@@ -121,8 +138,9 @@ const Payment = () => {
         <Card>
           <CardContent className="pt-6">
             <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                {orderError?.message || "Order not found"}
+                {orderError?.message || "Order not found. Please check the URL and try again."}
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -159,6 +177,7 @@ const Payment = () => {
 
             {error && (
               <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
