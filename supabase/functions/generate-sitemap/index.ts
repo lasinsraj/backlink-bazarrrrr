@@ -52,16 +52,18 @@ serve(async (req) => {
   </url>`;
 
     // Add product URLs with slugs
-    for (const product of products) {
-      const slug = generateSlug(product.title);
-      const lastmod = new Date(product.created_at).toISOString().split('T')[0];
-      sitemap += `
+    if (products) {
+      for (const product of products) {
+        const slug = generateSlug(product.title);
+        const lastmod = new Date(product.created_at).toISOString().split('T')[0];
+        sitemap += `
   <url>
     <loc>${baseUrl}/product/${slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`;
+      }
     }
 
     sitemap += '\n</urlset>';
