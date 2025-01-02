@@ -21,7 +21,7 @@ serve(async (req) => {
     // Fetch all products
     const { data: products, error: productsError } = await supabase
       .from('products')
-      .select('id, title, created_at')
+      .select('title, created_at')
       .order('created_at', { ascending: false });
 
     if (productsError) throw productsError;
@@ -87,8 +87,6 @@ serve(async (req) => {
       .eq('id', (await supabase.from('sitemap_status').select('id').single()).data?.id);
 
     if (updateError) throw updateError;
-
-    console.log('Sitemap generated and stored successfully');
 
     return new Response(
       JSON.stringify({ success: true, message: 'Sitemap updated successfully' }),

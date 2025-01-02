@@ -14,15 +14,14 @@ const ProductDetail = () => {
   const { toast } = useToast();
   const { session } = useSessionContext();
 
-  // Function to check if string is a UUID
-  const isUUID = (str: string) => {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(str);
-  };
-
-  // Function to convert slug back to a searchable title
-  const slugToTitle = (slug: string) => {
-    return slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
   };
 
   const { data: product, isLoading: productLoading } = useQuery({
@@ -33,39 +32,44 @@ const ProductDetail = () => {
         return null;
       }
 
-      let query = supabase.from("products").select("*, user_id");
+      // First try to find by title-based slug
+      const { data: productsByTitle, error: titleError } = await supabase
+        .from("products")
+        .select("*")
+        .eq('id', slug)
+        .maybeSingle();
 
-      // If it's a UUID, query by ID, otherwise query by title
-      if (isUUID(slug)) {
-        query = query.eq('id', slug);
-      } else {
-        const titleFromSlug = slugToTitle(slug);
-        // Use ilike for case-insensitive matching and exact title match
-        query = query.ilike('title', titleFromSlug);
+      if (productsByTitle) {
+        // If found by ID, redirect to slug URL
+        const titleSlug = generateSlug(productsByTitle.title);
+        if (slug !== titleSlug) {
+          navigate(`/product/${titleSlug}`, { replace: true });
+        }
+        return productsByTitle;
       }
 
-      const { data, error } = await query.maybeSingle();
+      // If not found by ID, search by slug
+      const { data: products, error: slugError } = await supabase
+        .from("products")
+        .select("*");
 
-      if (error) {
-        console.error('Error fetching product:', error);
+      if (slugError) throw slugError;
+
+      const product = products?.find(p => generateSlug(p.title) === slug);
+
+      if (!product) {
         toast({
-          title: "Error",
-          description: "Failed to load product details",
+          title: "Product not found",
+          description: "The requested product could not be found.",
           variant: "destructive",
         });
         navigate('/404', { replace: true });
         return null;
       }
 
-      if (!data) {
-        console.log('No product found for slug:', slug);
-        navigate('/404', { replace: true });
-        return null;
-      }
-
-      return data;
+      return product;
     },
-    retry: false // Don't retry on 404s
+    retry: false
   });
 
   if (productLoading) {
@@ -77,7 +81,7 @@ const ProductDetail = () => {
   }
 
   if (!product) {
-    return null; // Navigation will handle this case
+    return null;
   }
 
   const defaultImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80";
