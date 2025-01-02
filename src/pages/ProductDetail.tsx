@@ -32,32 +32,42 @@ const ProductDetail = () => {
         return null;
       }
 
-      // First try to find by title-based slug
-      const { data: productsByTitle, error: titleError } = await supabase
-        .from("products")
-        .select("*")
-        .eq('id', slug)
-        .maybeSingle();
-
-      if (productsByTitle) {
-        // If found by ID, redirect to slug URL
-        const titleSlug = generateSlug(productsByTitle.title);
-        if (slug !== titleSlug) {
-          navigate(`/product/${titleSlug}`, { replace: true });
-        }
-        return productsByTitle;
-      }
-
-      // If not found by ID, search by slug
-      const { data: products, error: slugError } = await supabase
+      // First try to find by matching the slug with generated title slugs
+      const { data: products, error } = await supabase
         .from("products")
         .select("*");
 
-      if (slugError) throw slugError;
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
 
+      // Find the product where its title generates the matching slug
       const product = products?.find(p => generateSlug(p.title) === slug);
 
       if (!product) {
+        // If no match found by slug, try UUID (for backward compatibility)
+        try {
+          const { data: productById, error: idError } = await supabase
+            .from("products")
+            .select("*")
+            .eq('id', slug)
+            .maybeSingle();
+
+          if (idError) throw idError;
+
+          if (productById) {
+            // Redirect to the slug URL if found by ID
+            const titleSlug = generateSlug(productById.title);
+            navigate(`/product/${titleSlug}`, { replace: true });
+            return productById;
+          }
+        } catch (err) {
+          // If UUID lookup fails, that's fine, we'll show 404
+          console.log('UUID lookup failed:', err);
+        }
+
+        // If no product found by either method
         toast({
           title: "Product not found",
           description: "The requested product could not be found.",
