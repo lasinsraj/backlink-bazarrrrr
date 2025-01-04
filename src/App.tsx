@@ -104,7 +104,7 @@ const AppRoutes = () => {
             } 
           />
           <Route
-            path="/account/:section?"
+            path="/account/*"
             element={
               <ProtectedRoute>
                 <Account />
@@ -112,7 +112,47 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="/admin/*"
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/chats"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/blog"
             element={
               <ProtectedRoute>
                 <AdminPanel />
