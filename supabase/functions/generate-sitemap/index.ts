@@ -34,7 +34,7 @@ serve(async (req) => {
       .update({ needs_update: false, last_updated: new Date().toISOString() })
       .eq('needs_update', true);
 
-    const baseUrl = 'https://backlinkbazaar.com'; // Replace with your actual domain
+    const baseUrl = 'https://backlinkbazaar.online'; // Updated domain
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
