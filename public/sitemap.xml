@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://backlinkbazaar.com/</loc>
+    <loc>https://backlink-bazaar.netlify.app/</loc>
     <lastmod>2024-03-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://backlinkbazaar.com/shop</loc>
+    <loc>https://backlink-bazaar.netlify.app/shop</loc>
     <lastmod>2024-03-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://backlinkbazaar.com/auth</loc>
+    <loc>https://backlink-bazaar.netlify.app/auth</loc>
     <lastmod>2024-03-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://backlinkbazaar.com/product/domain-authority-booster</loc>
+    <loc>https://backlink-bazaar.netlify.app/product/domain-authority-booster</loc>
     <lastmod>2024-03-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://backlinkbazaar.com/product/seo-backlink-package</loc>
+    <loc>https://backlink-bazaar.netlify.app/product/seo-backlink-package</loc>
     <lastmod>2024-03-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://backlinkbazaar.com/product/premium-guest-post</loc>
+    <loc>https://backlink-bazaar.netlify.app/product/premium-guest-post</loc>
     <lastmod>2024-03-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
