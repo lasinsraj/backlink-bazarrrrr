@@ -62,13 +62,11 @@ const BlogManagement = () => {
         meta_keywords: data.meta_keywords || null,
         canonical_url: data.canonical_url || null,
       };
-      
+
       const { error } = await supabase
         .from('products')
-        .insert([blogPost])
-        .select()
-        .single();
-        
+        .insert(blogPost);
+
       if (error) throw error;
       
       toast({
