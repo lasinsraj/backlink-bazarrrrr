@@ -65,7 +65,7 @@ const BlogManagement = () => {
 
       const { error } = await supabase
         .from('products')
-        .insert(blogPost);
+        .insert([blogPost]); // Wrap blogPost in an array
 
       if (error) throw error;
       
