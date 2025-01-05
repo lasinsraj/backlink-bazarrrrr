@@ -13,6 +13,10 @@ interface BlogPostForm {
   title: string;
   content: string;
   image: FileList;
+  meta_title?: string;
+  meta_description?: string;
+  meta_keywords?: string;
+  canonical_url?: string;
 }
 
 const BlogManagement = () => {
@@ -32,7 +36,7 @@ const BlogManagement = () => {
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `blog/${fileName}`;
         
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError, data: uploadData } = await supabase.storage
           .from('products')
           .upload(filePath, file);
           
@@ -55,6 +59,10 @@ const BlogManagement = () => {
           category: 'blog',
           price: 0,
           image_url: imageUrl,
+          meta_title: data.meta_title || data.title,
+          meta_description: data.meta_description,
+          meta_keywords: data.meta_keywords,
+          canonical_url: data.canonical_url,
         });
         
       if (error) throw error;
@@ -105,6 +113,44 @@ const BlogManagement = () => {
           {errors.content && (
             <p className="text-sm text-red-500">{errors.content.message}</p>
           )}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="meta_title">Meta Title (SEO)</Label>
+          <Input
+            id="meta_title"
+            {...register("meta_title")}
+            placeholder="Enter meta title (50-60 characters recommended)"
+            maxLength={60}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="meta_description">Meta Description (SEO)</Label>
+          <Textarea
+            id="meta_description"
+            {...register("meta_description")}
+            placeholder="Enter meta description (150-160 characters recommended)"
+            maxLength={160}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="meta_keywords">Meta Keywords (SEO)</Label>
+          <Input
+            id="meta_keywords"
+            {...register("meta_keywords")}
+            placeholder="Enter keywords separated by commas"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="canonical_url">Canonical URL (SEO)</Label>
+          <Input
+            id="canonical_url"
+            {...register("canonical_url")}
+            placeholder="Enter canonical URL if different from current URL"
+          />
         </div>
         
         <div className="space-y-2">
