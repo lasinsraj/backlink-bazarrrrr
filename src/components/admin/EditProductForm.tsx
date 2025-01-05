@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProductBasicForm from "./ProductBasicForm";
+import ProductImageForm from "./ProductImageForm";
+import ProductSEOForm from "./ProductSEOForm";
 
 interface EditProductFormProps {
   initialData: {
@@ -13,6 +14,10 @@ interface EditProductFormProps {
     price: string;
     category: string;
     image_url: string;
+    meta_title?: string;
+    meta_description?: string;
+    meta_keywords?: string;
+    canonical_url?: string;
   };
   onSubmit: (data: any) => Promise<void>;
 }
@@ -22,8 +27,7 @@ const EditProductForm = ({ initialData, onSubmit }: EditProductFormProps) => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const handleChange = (name: string, value: string) => {
     setProduct(prev => ({ ...prev, [name]: value }));
   };
 
@@ -96,99 +100,42 @@ const EditProductForm = ({ initialData, onSubmit }: EditProductFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium mb-2">
-          Title
-        </label>
-        <Input
-          id="title"
-          name="title"
-          value={product.title}
-          onChange={handleChange}
-          required
-        />
-      </div>
+      <Tabs defaultValue="basic" className="w-full">
+        <TabsList>
+          <TabsTrigger value="basic">Basic Info</TabsTrigger>
+          <TabsTrigger value="seo">SEO</TabsTrigger>
+          <TabsTrigger value="media">Media</TabsTrigger>
+        </TabsList>
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium mb-2">
-          Description
-        </label>
-        <Textarea
-          id="description"
-          name="description"
-          value={product.description}
-          onChange={handleChange}
-          rows={4}
-        />
-      </div>
+        <TabsContent value="basic" className="mt-4">
+          <ProductBasicForm 
+            product={product}
+            onChange={handleChange}
+          />
+        </TabsContent>
 
-      <div>
-        <label htmlFor="price" className="block text-sm font-medium mb-2">
-          Price
-        </label>
-        <Input
-          id="price"
-          name="price"
-          type="number"
-          step="0.01"
-          value={product.price}
-          onChange={handleChange}
-          required
-        />
-      </div>
+        <TabsContent value="seo" className="mt-4">
+          <ProductSEOForm
+            seoData={{
+              meta_title: product.meta_title || '',
+              meta_description: product.meta_description || '',
+              meta_keywords: product.meta_keywords || '',
+              canonical_url: product.canonical_url || '',
+            }}
+            onChange={handleChange}
+          />
+        </TabsContent>
 
-      <div>
-        <label htmlFor="category" className="block text-sm font-medium mb-2">
-          Category
-        </label>
-        <Input
-          id="category"
-          name="category"
-          value={product.category}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Product Image
-        </label>
-        {product.image_url && (
-          <div className="mb-4">
-            <div className="relative w-32 h-32 group">
-              <img 
-                src={product.image_url} 
-                alt={product.title} 
-                className="w-full h-full object-cover rounded-lg"
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={handleImageDelete}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-        <Input
-          id="image"
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          disabled={uploading}
-          className="cursor-pointer"
-        />
-        {uploading && (
-          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Uploading...
-          </div>
-        )}
-      </div>
+        <TabsContent value="media" className="mt-4">
+          <ProductImageForm
+            imageUrl={product.image_url}
+            title={product.title}
+            uploading={uploading}
+            onUpload={handleImageUpload}
+            onDelete={handleImageDelete}
+          />
+        </TabsContent>
+      </Tabs>
 
       <div className="flex gap-4">
         <Button type="submit" disabled={uploading}>
