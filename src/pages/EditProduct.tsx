@@ -48,6 +48,7 @@ const EditProduct = () => {
     try {
       if (!id) throw new Error("Product ID is required");
 
+      // First update the product
       const { error } = await supabase
         .from("products")
         .update({
@@ -61,7 +62,8 @@ const EditProduct = () => {
           meta_keywords: updatedProduct.meta_keywords,
           canonical_url: updatedProduct.canonical_url,
         })
-        .eq('id', id); // This is the key fix - adding the WHERE clause
+        .eq("id", id)
+        .select();  // Add .select() to get the updated record
 
       if (error) throw error;
 
