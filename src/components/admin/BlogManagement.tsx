@@ -30,13 +30,13 @@ const BlogManagement = () => {
       
       let imageUrl = "";
       
-      if (data.image[0]) {
+      if (data.image?.[0]) {
         const file = data.image[0];
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random()}.${fileExt}`;
         const filePath = `blog/${fileName}`;
         
-        const { error: uploadError, data: uploadData } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('products')
           .upload(filePath, file);
           
@@ -50,20 +50,22 @@ const BlogManagement = () => {
           
         imageUrl = publicUrl;
       }
+
+      const blogPost = {
+        title: data.title,
+        description: data.content,
+        category: 'blog',
+        price: 0,
+        image_url: imageUrl || null,
+        meta_title: data.meta_title || data.title,
+        meta_description: data.meta_description || null,
+        meta_keywords: data.meta_keywords || null,
+        canonical_url: data.canonical_url || null,
+      };
       
       const { error } = await supabase
         .from('products')
-        .insert({
-          title: data.title,
-          description: data.content,
-          category: 'blog',
-          price: 0,
-          image_url: imageUrl,
-          meta_title: data.meta_title || data.title,
-          meta_description: data.meta_description,
-          meta_keywords: data.meta_keywords,
-          canonical_url: data.canonical_url,
-        });
+        .insert([blogPost]);
         
       if (error) throw error;
       
@@ -73,11 +75,11 @@ const BlogManagement = () => {
       });
       
       reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error publishing blog post:', error);
       toast({
         title: "Error",
-        description: "Failed to publish blog post",
+        description: error.message || "Failed to publish blog post",
         variant: "destructive",
       });
     } finally {
