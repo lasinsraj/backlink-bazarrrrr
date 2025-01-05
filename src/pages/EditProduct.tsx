@@ -13,11 +13,17 @@ const EditProduct = () => {
   const [product, setProduct] = useState(null);
 
   useEffect(() => {
+    if (!id) {
+      navigate("/admin");
+      return;
+    }
     fetchProduct();
   }, [id]);
 
   const fetchProduct = async () => {
     try {
+      if (!id) return;
+
       const { data, error } = await supabase
         .from("products")
         .select("*")
@@ -40,6 +46,8 @@ const EditProduct = () => {
 
   const handleSubmit = async (updatedProduct: any) => {
     try {
+      if (!id) throw new Error("Product ID is required");
+
       const { error } = await supabase
         .from("products")
         .update({
@@ -79,10 +87,18 @@ const EditProduct = () => {
     );
   }
 
+  if (!id || !product) {
+    return (
+      <div className="container py-8">
+        <p>Product not found</p>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-6">Edit Product</h1>
-      {product && <EditProductForm initialData={product} onSubmit={handleSubmit} />}
+      <EditProductForm initialData={product} onSubmit={handleSubmit} />
     </div>
   );
 };
