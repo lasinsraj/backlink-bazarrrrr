@@ -1,3 +1,4 @@
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -15,61 +16,44 @@ const ProductSEOForm = ({ seoData, onChange }: ProductSEOFormProps) => {
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="meta_title" className="block text-sm font-medium mb-2">
-          SEO Title
-        </label>
+        <Label htmlFor="meta_title">Meta Title</Label>
         <Input
           id="meta_title"
-          name="meta_title"
           value={seoData.meta_title}
           onChange={(e) => onChange("meta_title", e.target.value)}
-          placeholder="Enter SEO title"
+          placeholder="Enter meta title (50-60 characters recommended)"
+          maxLength={60}
         />
-        <p className="text-sm text-muted-foreground mt-1">
-          Recommended length: 50-60 characters
-        </p>
       </div>
 
       <div>
-        <label htmlFor="meta_description" className="block text-sm font-medium mb-2">
-          Meta Description
-        </label>
+        <Label htmlFor="meta_description">Meta Description</Label>
         <Textarea
           id="meta_description"
-          name="meta_description"
           value={seoData.meta_description}
           onChange={(e) => onChange("meta_description", e.target.value)}
-          placeholder="Enter meta description"
-          rows={3}
+          placeholder="Enter meta description (150-160 characters recommended)"
+          maxLength={160}
         />
-        <p className="text-sm text-muted-foreground mt-1">
-          Recommended length: 150-160 characters
-        </p>
       </div>
 
       <div>
-        <label htmlFor="meta_keywords" className="block text-sm font-medium mb-2">
-          Meta Keywords
-        </label>
+        <Label htmlFor="meta_keywords">Meta Keywords</Label>
         <Input
           id="meta_keywords"
-          name="meta_keywords"
           value={seoData.meta_keywords}
           onChange={(e) => onChange("meta_keywords", e.target.value)}
-          placeholder="Enter keywords, separated by commas"
+          placeholder="Enter keywords separated by commas"
         />
       </div>
 
       <div>
-        <label htmlFor="canonical_url" className="block text-sm font-medium mb-2">
-          Canonical URL
-        </label>
+        <Label htmlFor="canonical_url">Canonical URL</Label>
         <Input
           id="canonical_url"
-          name="canonical_url"
           value={seoData.canonical_url}
           onChange={(e) => onChange("canonical_url", e.target.value)}
-          placeholder="Enter canonical URL"
+          placeholder="Enter canonical URL if different from current URL"
         />
       </div>
     </div>

@@ -48,6 +48,10 @@ const EditProduct = () => {
           price: parseFloat(updatedProduct.price),
           category: updatedProduct.category,
           image_url: updatedProduct.image_url,
+          meta_title: updatedProduct.meta_title,
+          meta_description: updatedProduct.meta_description,
+          meta_keywords: updatedProduct.meta_keywords,
+          canonical_url: updatedProduct.canonical_url,
         })
         .eq("id", id);
 

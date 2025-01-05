@@ -93,34 +93,46 @@ export type Database = {
       }
       products: {
         Row: {
+          canonical_url: string | null
           category: string
           created_at: string
           description: string | null
           features: string[] | null
           id: string
           image_url: string | null
+          meta_description: string | null
+          meta_keywords: string | null
+          meta_title: string | null
           price: number
           title: string
           user_id: string | null
         }
         Insert: {
+          canonical_url?: string | null
           category: string
           created_at?: string
           description?: string | null
           features?: string[] | null
           id?: string
           image_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           price: number
           title: string
           user_id?: string | null
         }
         Update: {
+          canonical_url?: string | null
           category?: string
           created_at?: string
           description?: string | null
           features?: string[] | null
           id?: string
           image_url?: string | null
+          meta_description?: string | null
+          meta_keywords?: string | null
+          meta_title?: string | null
           price?: number
           title?: string
           user_id?: string | null
