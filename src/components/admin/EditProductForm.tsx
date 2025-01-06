@@ -25,6 +25,7 @@ interface EditProductFormProps {
 const EditProductForm = ({ initialData, onSubmit }: EditProductFormProps) => {
   const [product, setProduct] = useState(initialData);
   const [uploading, setUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const handleChange = (name: string, value: string) => {
@@ -95,7 +96,18 @@ const EditProductForm = ({ initialData, onSubmit }: EditProductFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(product);
+    try {
+      setIsSubmitting(true);
+      await onSubmit(product);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -138,8 +150,11 @@ const EditProductForm = ({ initialData, onSubmit }: EditProductFormProps) => {
       </Tabs>
 
       <div className="flex gap-4">
-        <Button type="submit" disabled={uploading}>
-          Save Changes
+        <Button 
+          type="submit" 
+          disabled={uploading || isSubmitting}
+        >
+          {isSubmitting ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
     </form>
