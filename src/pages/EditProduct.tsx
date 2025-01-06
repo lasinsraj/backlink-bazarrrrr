@@ -47,36 +47,46 @@ const EditProduct = () => {
   const handleSubmit = async (updatedProduct: any) => {
     if (!id) throw new Error("Product ID is required");
 
-    const { error } = await supabase
-      .from("products")
-      .update({
-        title: updatedProduct.title,
-        description: updatedProduct.description,
-        price: parseFloat(updatedProduct.price),
-        category: updatedProduct.category,
-        image_url: updatedProduct.image_url,
-        meta_title: updatedProduct.meta_title || null,
-        meta_description: updatedProduct.meta_description || null,
-        meta_keywords: updatedProduct.meta_keywords || null,
-        canonical_url: updatedProduct.canonical_url || null,
-      })
-      .eq('id', id)
-      .single();
+    try {
+      const { error } = await supabase
+        .from("products")
+        .update({
+          title: updatedProduct.title,
+          description: updatedProduct.description,
+          price: parseFloat(updatedProduct.price),
+          category: updatedProduct.category,
+          image_url: updatedProduct.image_url,
+          meta_title: updatedProduct.meta_title || null,
+          meta_description: updatedProduct.meta_description || null,
+          meta_keywords: updatedProduct.meta_keywords || null,
+          canonical_url: updatedProduct.canonical_url || null,
+        })
+        .match({ id }) // Using match instead of eq for better clarity with UPDATE
+        .single();
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+      navigate("/admin/products");
+    } catch (error: any) {
+      // This catch block will handle any other errors that might occur
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to update product",
         variant: "destructive",
       });
       throw error;
     }
-
-    toast({
-      title: "Success",
-      description: "Product updated successfully",
-    });
-    navigate("/admin/products");
   };
 
   if (loading) {
