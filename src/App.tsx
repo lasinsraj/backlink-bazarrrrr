@@ -13,27 +13,33 @@ import BlogManagement from "@/components/admin/BlogManagement";
 import Index from "@/pages/Index";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// Create a client
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/products/edit/:id" element={<EditProduct />} />
-          <Route path="/admin/products/new" element={<NewProduct />} />
-          <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/orders" element={<OrderManagement />} />
-          <Route path="/admin/products" element={<ProductManagement />} />
-          <Route path="/admin/chats" element={<ChatManagement />} />
-          <Route path="/admin/blog" element={<BlogManagement />} />
-        </Routes>
-        <Footer />
-        <Toaster />
-      </Router>
-    </SessionContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase}>
+        <Router>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/admin/products/edit/:id" element={<EditProduct />} />
+            <Route path="/admin/products/new" element={<NewProduct />} />
+            <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/orders" element={<OrderManagement />} />
+            <Route path="/admin/products" element={<ProductManagement />} />
+            <Route path="/admin/chats" element={<ChatManagement />} />
+            <Route path="/admin/blog" element={<BlogManagement />} />
+          </Routes>
+          <Footer />
+          <Toaster />
+        </Router>
+      </SessionContextProvider>
+    </QueryClientProvider>
   );
 }
 
