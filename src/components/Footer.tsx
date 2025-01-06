@@ -27,22 +27,6 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a 
-                  href="/sitemap.xml" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-slate-600 hover:text-primary transition-colors"
-                >
-                  Sitemap
-                </a>
-              </li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-2">
-              <li>
                 <Link to="/faq" className="text-slate-600 hover:text-primary transition-colors">
                   FAQ
                 </Link>
@@ -52,10 +36,31 @@ const Footer = () => {
                   Contact Us
                 </Link>
               </li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">Legal</h4>
+            <ul className="space-y-2">
               <li>
                 <Link to="/terms" className="text-slate-600 hover:text-primary transition-colors">
-                  Terms of Service
+                  Terms & Conditions
                 </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-slate-600 hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <a 
+                  href="/sitemap.xml" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-slate-600 hover:text-primary transition-colors"
+                >
+                  Sitemap
+                </a>
               </li>
             </ul>
           </div>

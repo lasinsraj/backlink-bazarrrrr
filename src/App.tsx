@@ -18,8 +18,11 @@ import Payment from "./pages/Payment";
 import AdminPanel from "./pages/AdminPanel";
 import EditProduct from "./pages/EditProduct";
 import Shop from "./pages/Shop";
+import Terms from "./pages/Terms";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
+import Privacy from "./pages/Privacy";
 
-// Configure QueryClient with proper error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -82,6 +85,10 @@ const AppRoutes = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route 
             path="/auth" 
             element={session ? <Navigate to="/" replace /> : <Auth />} 
