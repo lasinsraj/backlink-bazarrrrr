@@ -48,8 +48,8 @@ const EditProduct = () => {
     try {
       if (!id) throw new Error("Product ID is required");
 
-      // First update the product
-      const { error } = await supabase
+      // First find the product to update
+      const query = supabase
         .from("products")
         .update({
           title: updatedProduct.title,
@@ -62,8 +62,9 @@ const EditProduct = () => {
           meta_keywords: updatedProduct.meta_keywords,
           canonical_url: updatedProduct.canonical_url,
         })
-        .eq("id", id)
-        .select();  // Add .select() to get the updated record
+        .match({ id: id }); // Using match instead of eq for the WHERE clause
+
+      const { error } = await query;
 
       if (error) throw error;
 
