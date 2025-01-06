@@ -61,7 +61,7 @@ const EditProduct = () => {
           meta_keywords: updatedProduct.meta_keywords,
           canonical_url: updatedProduct.canonical_url,
         })
-        .match({ id });  // Using match instead of eq for the WHERE clause
+        .eq('id', id);
 
       if (error) throw error;
 
