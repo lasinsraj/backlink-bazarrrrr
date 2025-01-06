@@ -61,7 +61,8 @@ const EditProduct = () => {
           meta_keywords: updatedProduct.meta_keywords,
           canonical_url: updatedProduct.canonical_url,
         })
-        .eq('id', id);
+        .eq("id", id)
+        .select();
 
       if (error) throw error;
 
