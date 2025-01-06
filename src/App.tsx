@@ -10,26 +10,30 @@ import OrderManagement from "@/components/admin/OrderManagement";
 import ProductManagement from "@/components/admin/ProductManagement";
 import ChatManagement from "@/components/admin/ChatManagement";
 import BlogManagement from "@/components/admin/BlogManagement";
-import Index from "@/pages/Index"; // Import the Index component which serves as our Home page
+import Index from "@/pages/Index";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
 
 function App() {
   return (
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/admin/products/edit/:id" element={<EditProduct />} />
-        <Route path="/admin/products/new" element={<NewProduct />} />
-        <Route path="/admin/users" element={<UserManagement />} />
-        <Route path="/admin/orders" element={<OrderManagement />} />
-        <Route path="/admin/products" element={<ProductManagement />} />
-        <Route path="/admin/chats" element={<ChatManagement />} />
-        <Route path="/admin/blog" element={<BlogManagement />} />
-      </Routes>
-      <Footer />
-      <Toaster />
-    </Router>
+    <SessionContextProvider supabaseClient={supabase}>
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/products/edit/:id" element={<EditProduct />} />
+          <Route path="/admin/products/new" element={<NewProduct />} />
+          <Route path="/admin/users" element={<UserManagement />} />
+          <Route path="/admin/orders" element={<OrderManagement />} />
+          <Route path="/admin/products" element={<ProductManagement />} />
+          <Route path="/admin/chats" element={<ChatManagement />} />
+          <Route path="/admin/blog" element={<BlogManagement />} />
+        </Routes>
+        <Footer />
+        <Toaster />
+      </Router>
+    </SessionContextProvider>
   );
 }
 
