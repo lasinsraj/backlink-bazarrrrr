@@ -96,15 +96,14 @@ const EditProductForm = ({ initialData, onSubmit }: EditProductFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     try {
       setIsSubmitting(true);
       await onSubmit(product);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Error is already handled by the parent component
+      console.error('Form submission failed:', error);
     } finally {
       setIsSubmitting(false);
     }

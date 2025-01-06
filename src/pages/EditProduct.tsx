@@ -48,7 +48,6 @@ const EditProduct = () => {
     try {
       if (!id) throw new Error("Product ID is required");
 
-      // First construct the update object
       const updateData = {
         title: updatedProduct.title,
         description: updatedProduct.description,
@@ -61,7 +60,6 @@ const EditProduct = () => {
         canonical_url: updatedProduct.canonical_url,
       };
 
-      // Then perform the update with proper WHERE clause
       const { error } = await supabase
         .from("products")
         .update(updateData)
@@ -80,6 +78,7 @@ const EditProduct = () => {
         description: error.message,
         variant: "destructive",
       });
+      throw error; // Re-throw to be handled by the form
     }
   };
 
