@@ -48,22 +48,20 @@ const EditProduct = () => {
     try {
       if (!id) throw new Error("Product ID is required");
 
-      const updateData = {
-        title: updatedProduct.title,
-        description: updatedProduct.description,
-        price: parseFloat(updatedProduct.price),
-        category: updatedProduct.category,
-        image_url: updatedProduct.image_url,
-        meta_title: updatedProduct.meta_title,
-        meta_description: updatedProduct.meta_description,
-        meta_keywords: updatedProduct.meta_keywords,
-        canonical_url: updatedProduct.canonical_url,
-      };
-
       const { error } = await supabase
         .from("products")
-        .update(updateData)
-        .eq('id', id);
+        .update({
+          title: updatedProduct.title,
+          description: updatedProduct.description,
+          price: parseFloat(updatedProduct.price),
+          category: updatedProduct.category,
+          image_url: updatedProduct.image_url,
+          meta_title: updatedProduct.meta_title || null,
+          meta_description: updatedProduct.meta_description || null,
+          meta_keywords: updatedProduct.meta_keywords || null,
+          canonical_url: updatedProduct.canonical_url || null,
+        })
+        .eq('id', id); // This is the crucial fix - adding the WHERE clause
 
       if (error) throw error;
 
@@ -71,14 +69,14 @@ const EditProduct = () => {
         title: "Success",
         description: "Product updated successfully",
       });
-      navigate("/admin");
+      navigate("/admin/products");
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
-      throw error; // Re-throw to be handled by the form
+      throw error;
     }
   };
 
