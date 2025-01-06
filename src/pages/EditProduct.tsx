@@ -45,32 +45,25 @@ const EditProduct = () => {
   };
 
   const handleSubmit = async (updatedProduct: any) => {
-    try {
-      if (!id) throw new Error("Product ID is required");
+    if (!id) throw new Error("Product ID is required");
 
-      const { error } = await supabase
-        .from("products")
-        .update({
-          title: updatedProduct.title,
-          description: updatedProduct.description,
-          price: parseFloat(updatedProduct.price),
-          category: updatedProduct.category,
-          image_url: updatedProduct.image_url,
-          meta_title: updatedProduct.meta_title || null,
-          meta_description: updatedProduct.meta_description || null,
-          meta_keywords: updatedProduct.meta_keywords || null,
-          canonical_url: updatedProduct.canonical_url || null,
-        })
-        .eq('id', id); // This is the crucial fix - adding the WHERE clause
+    const { error } = await supabase
+      .from("products")
+      .update({
+        title: updatedProduct.title,
+        description: updatedProduct.description,
+        price: parseFloat(updatedProduct.price),
+        category: updatedProduct.category,
+        image_url: updatedProduct.image_url,
+        meta_title: updatedProduct.meta_title || null,
+        meta_description: updatedProduct.meta_description || null,
+        meta_keywords: updatedProduct.meta_keywords || null,
+        canonical_url: updatedProduct.canonical_url || null,
+      })
+      .eq('id', id)
+      .single();
 
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Product updated successfully",
-      });
-      navigate("/admin/products");
-    } catch (error: any) {
+    if (error) {
       toast({
         title: "Error",
         description: error.message,
@@ -78,6 +71,12 @@ const EditProduct = () => {
       });
       throw error;
     }
+
+    toast({
+      title: "Success",
+      description: "Product updated successfully",
+    });
+    navigate("/admin/products");
   };
 
   if (loading) {

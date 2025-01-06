@@ -101,9 +101,6 @@ const EditProductForm = ({ initialData, onSubmit }: EditProductFormProps) => {
     try {
       setIsSubmitting(true);
       await onSubmit(product);
-    } catch (error: any) {
-      // Error is already handled by the parent component
-      console.error('Form submission failed:', error);
     } finally {
       setIsSubmitting(false);
     }
