@@ -48,6 +48,7 @@ const EditProduct = () => {
     try {
       if (!id) throw new Error("Product ID is required");
 
+      // First specify the table and WHERE clause, then the update operation
       const { error } = await supabase
         .from("products")
         .update({
@@ -61,7 +62,7 @@ const EditProduct = () => {
           meta_keywords: updatedProduct.meta_keywords,
           canonical_url: updatedProduct.canonical_url,
         })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
 
