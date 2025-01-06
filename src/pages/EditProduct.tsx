@@ -48,20 +48,24 @@ const EditProduct = () => {
     try {
       if (!id) throw new Error("Product ID is required");
 
+      // First construct the update object
+      const updateData = {
+        title: updatedProduct.title,
+        description: updatedProduct.description,
+        price: parseFloat(updatedProduct.price),
+        category: updatedProduct.category,
+        image_url: updatedProduct.image_url,
+        meta_title: updatedProduct.meta_title,
+        meta_description: updatedProduct.meta_description,
+        meta_keywords: updatedProduct.meta_keywords,
+        canonical_url: updatedProduct.canonical_url,
+      };
+
+      // Then perform the update with proper WHERE clause
       const { error } = await supabase
         .from("products")
-        .update({
-          title: updatedProduct.title,
-          description: updatedProduct.description,
-          price: parseFloat(updatedProduct.price),
-          category: updatedProduct.category,
-          image_url: updatedProduct.image_url,
-          meta_title: updatedProduct.meta_title,
-          meta_description: updatedProduct.meta_description,
-          meta_keywords: updatedProduct.meta_keywords,
-          canonical_url: updatedProduct.canonical_url,
-        })
-        .eq("id", id);
+        .update(updateData)
+        .eq('id', id);
 
       if (error) throw error;
 
