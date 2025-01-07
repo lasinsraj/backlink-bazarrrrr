@@ -11,6 +11,7 @@ import ProductManagement from "@/components/admin/ProductManagement";
 import ChatManagement from "@/components/admin/ChatManagement";
 import BlogManagement from "@/components/admin/BlogManagement";
 import Index from "@/pages/Index";
+import Shop from "@/pages/Shop";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -26,6 +27,7 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/shop" element={<Shop />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/admin/products/edit/:id" element={<EditProduct />} />
             <Route path="/admin/products/new" element={<NewProduct />} />
