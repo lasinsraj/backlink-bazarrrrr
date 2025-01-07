@@ -12,6 +12,10 @@ import ChatManagement from "@/components/admin/ChatManagement";
 import BlogManagement from "@/components/admin/BlogManagement";
 import Index from "@/pages/Index";
 import Shop from "@/pages/Shop";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
+import FAQ from "@/pages/FAQ";
+import Contact from "@/pages/Contact";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -36,6 +40,10 @@ function App() {
             <Route path="/admin/products" element={<ProductManagement />} />
             <Route path="/admin/chats" element={<ChatManagement />} />
             <Route path="/admin/blog" element={<BlogManagement />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<Contact />} />
           </Routes>
           <Footer />
           <Toaster />
