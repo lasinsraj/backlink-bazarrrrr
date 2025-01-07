@@ -33,46 +33,49 @@ const ProductDetail = () => {
         return null;
       }
 
-      const { data: products, error } = await supabase
+      // First try to find by title slug
+      const { data: products, error: slugError } = await supabase
         .from("products")
         .select("*");
 
-      if (error) {
-        console.error('Error fetching products:', error);
-        throw error;
+      if (slugError) {
+        console.error('Error fetching products:', slugError);
+        throw slugError;
       }
 
-      const product = products?.find(p => generateSlug(p.title) === slug);
+      const productBySlug = products?.find(p => generateSlug(p.title) === slug);
 
-      if (!product) {
-        try {
-          const { data: productById, error: idError } = await supabase
-            .from("products")
-            .select("*")
-            .eq('id', slug)
-            .maybeSingle();
+      if (productBySlug) {
+        return productBySlug;
+      }
 
-          if (idError) throw idError;
+      // If not found by slug, try to find by ID
+      try {
+        const { data: productById, error: idError } = await supabase
+          .from("products")
+          .select("*")
+          .eq('id', slug)
+          .maybeSingle();
 
-          if (productById) {
-            const titleSlug = generateSlug(productById.title);
-            navigate(`/product/${titleSlug}`, { replace: true });
-            return productById;
-          }
-        } catch (err) {
-          console.log('UUID lookup failed:', err);
+        if (idError) throw idError;
+
+        if (productById) {
+          // Redirect to the slug URL if found by ID
+          const titleSlug = generateSlug(productById.title);
+          navigate(`/product/${titleSlug}`, { replace: true });
+          return productById;
         }
-
-        toast({
-          title: "Product not found",
-          description: "The requested product could not be found.",
-          variant: "destructive",
-        });
-        navigate('/404', { replace: true });
-        return null;
+      } catch (err) {
+        console.error('UUID lookup failed:', err);
       }
 
-      return product;
+      toast({
+        title: "Product not found",
+        description: "The requested product could not be found.",
+        variant: "destructive",
+      });
+      navigate('/404', { replace: true });
+      return null;
     },
     retry: false
   });

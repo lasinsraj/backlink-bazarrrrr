@@ -44,6 +44,16 @@ const Shop = () => {
     }
   };
 
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -84,7 +94,7 @@ const Shop = () => {
                   ${product.price.toFixed(2)}
                 </span>
                 <Button
-                  onClick={() => navigate(`/product/${product.id}`)}
+                  onClick={() => navigate(`/product/${generateSlug(product.title)}`)}
                 >
                   View Details
                 </Button>
