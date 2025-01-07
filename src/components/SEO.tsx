@@ -28,6 +28,23 @@ const SEO = () => {
       <meta name="author" content="Backlink Bazaar" />
       <link rel="canonical" href="https://backlinkbazaar.com/" />
       <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+      
+      {/* Structured Data */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Backlink Bazaar",
+          "description": "Premium quality backlinks marketplace for SEO professionals",
+          "url": "https://backlinkbazaar.com",
+          "logo": "/og-image.svg",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "contact@backlinkbazaar.com",
+            "contactType": "customer service"
+          }
+        })}
+      </script>
     </Helmet>
   );
 };

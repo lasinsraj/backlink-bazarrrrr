@@ -7,14 +7,14 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">Backlink Bazaar</h3>
+            <h2 className="font-bold text-lg mb-4">Backlink Bazaar</h2>
             <p className="text-slate-600">
               Your trusted marketplace for high-quality backlinks and SEO services.
             </p>
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Quick Links</h4>
+            <h3 className="font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-slate-600 hover:text-primary transition-colors">
@@ -40,7 +40,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
+            <h3 className="font-semibold mb-4">Policies</h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/terms" className="text-slate-600 hover:text-primary transition-colors">
@@ -50,6 +50,11 @@ const Footer = () => {
               <li>
                 <Link to="/privacy" className="text-slate-600 hover:text-primary transition-colors">
                   Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund" className="text-slate-600 hover:text-primary transition-colors">
+                  Refund Policy
                 </Link>
               </li>
               <li>
@@ -66,7 +71,7 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Connect With Us</h4>
+            <h3 className="font-semibold mb-4">Connect With Us</h3>
             <div className="flex space-x-4">
               <a 
                 href="#" 
