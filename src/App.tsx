@@ -16,6 +16,7 @@ import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
+import ProductDetail from "@/pages/ProductDetail";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -32,6 +33,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/shop" element={<Shop />} />
+            <Route path="/product/:slug" element={<ProductDetail />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/admin/products/edit/:id" element={<EditProduct />} />
             <Route path="/admin/products/new" element={<NewProduct />} />
