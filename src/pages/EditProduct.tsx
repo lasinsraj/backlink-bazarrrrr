@@ -28,9 +28,20 @@ const EditProduct = () => {
         .from("products")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        toast({
+          title: "Error",
+          description: "Product not found",
+          variant: "destructive",
+        });
+        navigate("/admin/products");
+        return;
+      }
+      
       setProduct(data);
     } catch (error: any) {
       toast({
@@ -38,7 +49,7 @@ const EditProduct = () => {
         description: error.message,
         variant: "destructive",
       });
-      navigate("/admin");
+      navigate("/admin/products");
     } finally {
       setLoading(false);
     }
@@ -61,10 +72,10 @@ const EditProduct = () => {
           meta_keywords: updatedProduct.meta_keywords || null,
           canonical_url: updatedProduct.canonical_url || null,
         })
-        .match({ id }) // Using match instead of eq for better clarity with UPDATE
-        .single();
+        .eq("id", id);
 
       if (error) {
+        console.error("Supabase error:", error);
         toast({
           title: "Error",
           description: error.message,
@@ -79,7 +90,7 @@ const EditProduct = () => {
       });
       navigate("/admin/products");
     } catch (error: any) {
-      // This catch block will handle any other errors that might occur
+      console.error("Update error:", error);
       toast({
         title: "Error",
         description: "Failed to update product",
