@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import EditProductForm from "@/components/admin/EditProductForm";
+import type { Product } from "@/types";
 
 const NewProduct = () => {
   const navigate = useNavigate();
@@ -20,22 +20,21 @@ const NewProduct = () => {
     canonical_url: "",
   };
 
-  const handleSubmit = async (productData: any) => {
+  const handleSubmit = async (productData: Partial<Product>) => {
     try {
-      // Insert new product instead of updating
       const { data, error } = await supabase
         .from("products")
-        .insert([{
+        .insert({
           title: productData.title,
-          description: productData.description,
-          price: parseFloat(productData.price),
+          description: productData.description || null,
+          price: parseFloat(productData.price as string),
           category: productData.category,
           image_url: productData.image_url || null,
           meta_title: productData.meta_title || null,
           meta_description: productData.meta_description || null,
           meta_keywords: productData.meta_keywords || null,
           canonical_url: productData.canonical_url || null,
-        }])
+        })
         .select()
         .single();
 
@@ -50,6 +49,7 @@ const NewProduct = () => {
       });
       navigate("/admin/products");
     } catch (error: any) {
+      console.error("Error creating product:", error);
       toast({
         title: "Error",
         description: error.message,
