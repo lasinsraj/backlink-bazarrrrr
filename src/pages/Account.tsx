@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, Routes, Route } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,9 +9,7 @@ import { AccountOrders } from "@/components/account/AccountOrders";
 import { AccountPayments } from "@/components/account/AccountPayments";
 
 const Account = () => {
-  const { section = "profile" } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const { session } = useSessionContext();
   const { toast } = useToast();
 
@@ -22,7 +20,7 @@ const Account = () => {
     }
 
     // Check for success parameter in URL
-    const searchParams = new URLSearchParams(location.search);
+    const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get("success") === "true") {
       toast({
         title: "Payment successful!",
@@ -38,7 +36,7 @@ const Account = () => {
       });
       navigate("/account/orders", { replace: true });
     }
-  }, [session, navigate, location, toast]);
+  }, [session, navigate, toast]);
 
   if (!session) {
     return null;
@@ -48,25 +46,32 @@ const Account = () => {
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-6">My Account</h1>
       
-      <Tabs defaultValue={section} onValueChange={(value) => navigate(`/account/${value}`)}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="payments">Payment Methods</TabsTrigger>
-        </TabsList>
+      <Routes>
+        <Route path="/" element={
+          <Tabs defaultValue="profile">
+            <TabsList className="mb-6">
+              <TabsTrigger value="profile" onClick={() => navigate("/account/profile")}>Profile</TabsTrigger>
+              <TabsTrigger value="orders" onClick={() => navigate("/account/orders")}>Orders</TabsTrigger>
+              <TabsTrigger value="payments" onClick={() => navigate("/account/payments")}>Payment Methods</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="profile">
-          <AccountProfile session={session} />
-        </TabsContent>
+            <TabsContent value="profile">
+              <AccountProfile session={session} />
+            </TabsContent>
 
-        <TabsContent value="orders">
-          <AccountOrders session={session} />
-        </TabsContent>
+            <TabsContent value="orders">
+              <AccountOrders session={session} />
+            </TabsContent>
 
-        <TabsContent value="payments">
-          <AccountPayments session={session} />
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="payments">
+              <AccountPayments session={session} />
+            </TabsContent>
+          </Tabs>
+        } />
+        <Route path="/profile" element={<AccountProfile session={session} />} />
+        <Route path="/orders" element={<AccountOrders session={session} />} />
+        <Route path="/payments" element={<AccountPayments session={session} />} />
+      </Routes>
     </div>
   );
 };
