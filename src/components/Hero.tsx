@@ -23,14 +23,14 @@ const Hero = () => {
     <div className="bg-gradient-to-r from-primary/5 to-secondary/5 py-20">
       <div className="container mx-auto px-4 text-center">
         <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 animate-[fade-in_0.2s_ease-out]">
-          Find the Perfect Backlinks
+          Premium Quality Backlinks
           <br />
           <span className="text-primary">for Your Website</span>
         </h1>
         
-        <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto animate-[fade-in_0.2s_ease-out_0.1s]">
+        <h2 className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto animate-[fade-in_0.2s_ease-out_0.1s]">
           AI-powered backlink marketplace with high-quality, verified domains and real-time metrics
-        </p>
+        </h2>
         
         <div className="max-w-2xl mx-auto relative animate-[fade-in_0.2s_ease-out_0.2s]">
           <div className="flex items-center bg-white rounded-lg shadow-lg border p-2">

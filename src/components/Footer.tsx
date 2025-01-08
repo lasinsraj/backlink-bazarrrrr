@@ -1,119 +1,47 @@
 import { Link } from "react-router-dom";
-import { Facebook, Twitter, Instagram, Mail } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-white border-t mt-16">
-      <div className="container mx-auto px-4 py-8">
+    <footer className="bg-slate-900 text-white py-12">
+      <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h2 className="font-bold text-lg mb-4">Backlink Bazaar</h2>
-            <p className="text-slate-600">
-              Your trusted marketplace for high-quality backlinks and SEO services.
+            <h3 className="text-xl font-semibold mb-4">About Us</h3>
+            <p className="text-slate-400">
+              Premium backlink marketplace for SEO professionals and digital marketers.
             </p>
           </div>
           
           <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-slate-600 hover:text-primary transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/shop" className="text-slate-600 hover:text-primary transition-colors">
-                  Shop
-                </Link>
-              </li>
-              <li>
-                <Link to="/faq" className="text-slate-600 hover:text-primary transition-colors">
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-slate-600 hover:text-primary transition-colors">
-                  Contact Us
-                </Link>
-              </li>
+              <li><Link to="/" className="text-slate-400 hover:text-white">Home</Link></li>
+              <li><Link to="/shop" className="text-slate-400 hover:text-white">Shop</Link></li>
+              <li><Link to="/contact" className="text-slate-400 hover:text-white">Contact</Link></li>
+              <li><Link to="/faq" className="text-slate-400 hover:text-white">FAQ</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold mb-4">Policies</h3>
+            <h3 className="text-xl font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/terms" className="text-slate-600 hover:text-primary transition-colors">
-                  Terms & Conditions
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="text-slate-600 hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/refund" className="text-slate-600 hover:text-primary transition-colors">
-                  Refund Policy
-                </Link>
-              </li>
-              <li>
-                <a 
-                  href="/sitemap.xml" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-slate-600 hover:text-primary transition-colors"
-                >
-                  Sitemap
-                </a>
-              </li>
+              <li><Link to="/terms" className="text-slate-400 hover:text-white">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="text-slate-400 hover:text-white">Privacy Policy</Link></li>
+              <li><Link to="/refund-policy" className="text-slate-400 hover:text-white">Refund Policy</Link></li>
+              <li><a href="/robots.txt" className="text-slate-400 hover:text-white" target="_blank" rel="noopener noreferrer">Robots.txt</a></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="font-semibold mb-4">Connect With Us</h3>
-            <div className="flex space-x-4">
-              <a 
-                href="#" 
-                className="text-slate-600 hover:text-primary transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open('https://facebook.com', '_blank');
-                }}
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a 
-                href="#" 
-                className="text-slate-600 hover:text-primary transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open('https://twitter.com', '_blank');
-                }}
-              >
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a 
-                href="#" 
-                className="text-slate-600 hover:text-primary transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.open('https://instagram.com', '_blank');
-                }}
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a 
-                href="mailto:contact@backlinkbazaar.com" 
-                className="text-slate-600 hover:text-primary transition-colors"
-              >
-                <Mail className="h-5 w-5" />
-              </a>
-            </div>
+            <h3 className="text-xl font-semibold mb-4">Contact</h3>
+            <ul className="space-y-2 text-slate-400">
+              <li>Email: contact@backlinkbazaar.com</li>
+              <li>Support Hours: 24/7</li>
+            </ul>
           </div>
         </div>
         
-        <div className="border-t mt-8 pt-8 text-center text-slate-600">
+        <div className="mt-8 pt-8 border-t border-slate-800 text-center text-slate-400">
           <p>&copy; {new Date().getFullYear()} Backlink Bazaar. All rights reserved.</p>
         </div>
       </div>
