@@ -21,22 +21,19 @@ const NewProduct = () => {
   };
 
   const generateCanonicalUrl = (title: string): string => {
-    // Convert title to lowercase and replace spaces with hyphens
     const slug = title
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-'); // Remove consecutive hyphens
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
     
-    // Construct the full canonical URL
     return `https://backlinkbazaar.com/products/${slug}`;
   };
 
   const handleSubmit = async (productData: Partial<Product>) => {
     try {
-      // Generate canonical URL if not provided
       const canonicalUrl = productData.canonical_url || generateCanonicalUrl(productData.title || '');
-
+      
       // Ensure price is a number
       const price = typeof productData.price === 'string' 
         ? parseFloat(productData.price)
@@ -44,7 +41,7 @@ const NewProduct = () => {
 
       const { data, error } = await supabase
         .from("products")
-        .insert([{  // Wrap the object in an array for proper insert
+        .insert({
           title: productData.title,
           description: productData.description || null,
           price: price,
@@ -54,8 +51,8 @@ const NewProduct = () => {
           meta_description: productData.meta_description || null,
           meta_keywords: productData.meta_keywords || null,
           canonical_url: canonicalUrl,
-        }])
-        .select()
+        })
+        .select('*')
         .single();
 
       if (error) {
