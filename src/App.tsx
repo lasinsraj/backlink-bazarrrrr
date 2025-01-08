@@ -14,6 +14,7 @@ import Privacy from "@/pages/Privacy";
 import RefundPolicy from "@/pages/RefundPolicy";
 import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
+import Checkout from "@/pages/Checkout";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -33,6 +34,7 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/product/:slug" element={<ProductDetail />} />
+                <Route path="/checkout/:id" element={<Checkout />} />
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/admin/products/edit/:id" element={<EditProduct />} />
                 <Route path="/admin/products/new" element={<NewProduct />} />

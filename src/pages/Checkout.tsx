@@ -2,20 +2,15 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import CheckoutForm from "@/components/checkout/CheckoutForm";
+import ProductSummary from "@/components/checkout/ProductSummary";
 
 const Checkout = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [keywords, setKeywords] = useState("");
-  const [targetUrl, setTargetUrl] = useState("");
-  const [skipDetails, setSkipDetails] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: product, isLoading } = useQuery({
@@ -32,8 +27,7 @@ const Checkout = () => {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (keywords: string, targetUrl: string, skipDetails: boolean) => {
     setIsSubmitting(true);
 
     const {
@@ -51,7 +45,6 @@ const Checkout = () => {
     }
 
     try {
-      // Instead of creating an order, we'll create a checkout session directly
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: {
           productId: id,
@@ -98,63 +91,11 @@ const Checkout = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
         <h1 className="text-2xl font-bold mb-6">Complete Your Order</h1>
-        
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-2">{product.title}</h2>
-          <p className="text-gray-600 mb-2">{product.description}</p>
-          <div className="text-xl font-bold text-primary">${product.price}</div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Checkbox
-              id="skipDetails"
-              checked={skipDetails}
-              onCheckedChange={(checked) => setSkipDetails(checked as boolean)}
-            />
-            <Label htmlFor="skipDetails">
-              Add keywords and URL later
-            </Label>
-          </div>
-
-          {!skipDetails && (
-            <>
-              <div>
-                <Label className="block text-sm font-medium mb-2">
-                  Target Keywords
-                </Label>
-                <Input
-                  value={keywords}
-                  onChange={(e) => setKeywords(e.target.value)}
-                  placeholder="Enter your target keywords"
-                />
-              </div>
-
-              <div>
-                <Label className="block text-sm font-medium mb-2">
-                  Target URL
-                </Label>
-                <Input
-                  value={targetUrl}
-                  onChange={(e) => setTargetUrl(e.target.value)}
-                  placeholder="Enter your target URL"
-                  type="url"
-                />
-              </div>
-            </>
-          )}
-
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Proceed to Payment
-          </Button>
-        </form>
+        <ProductSummary product={product} />
+        <CheckoutForm 
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
       </div>
     </div>
   );
