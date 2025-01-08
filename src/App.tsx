@@ -1,4 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { createClient } from "@supabase/supabase-js";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Index from "@/pages/Index";
@@ -15,17 +18,15 @@ import RefundPolicy from "@/pages/RefundPolicy";
 import FAQ from "@/pages/FAQ";
 import Contact from "@/pages/Contact";
 import Checkout from "@/pages/Checkout";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { supabase } from "@/integrations/supabase/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase}>
         <Router>
           <div className="min-h-screen flex flex-col">
             <Header />
@@ -51,8 +52,8 @@ const App = () => {
           </div>
           <Toaster />
         </Router>
-      </QueryClientProvider>
-    </SessionContextProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
   );
 };
 
