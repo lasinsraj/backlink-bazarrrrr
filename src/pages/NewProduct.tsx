@@ -27,7 +27,9 @@ const NewProduct = () => {
         .insert({
           title: productData.title,
           description: productData.description || null,
-          price: parseFloat(productData.price as string),
+          price: typeof productData.price === 'string' 
+            ? parseFloat(productData.price) 
+            : productData.price,
           category: productData.category,
           image_url: productData.image_url || null,
           meta_title: productData.meta_title || null,
