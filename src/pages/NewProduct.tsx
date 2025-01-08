@@ -42,6 +42,11 @@ const NewProduct = () => {
 
       if (error) {
         console.error("Error creating product:", error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
         throw error;
       }
 
