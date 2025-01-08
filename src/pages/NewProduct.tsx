@@ -37,21 +37,24 @@ const NewProduct = () => {
       // Generate canonical URL if not provided
       const canonicalUrl = productData.canonical_url || generateCanonicalUrl(productData.title || '');
 
+      // Ensure price is a number
+      const price = typeof productData.price === 'string' 
+        ? parseFloat(productData.price)
+        : productData.price;
+
       const { data, error } = await supabase
         .from("products")
-        .insert({
+        .insert([{  // Wrap the object in an array for proper insert
           title: productData.title,
           description: productData.description || null,
-          price: typeof productData.price === 'string' 
-            ? parseFloat(productData.price) 
-            : productData.price,
+          price: price,
           category: productData.category,
           image_url: productData.image_url || null,
           meta_title: productData.meta_title || null,
           meta_description: productData.meta_description || null,
           meta_keywords: productData.meta_keywords || null,
           canonical_url: canonicalUrl,
-        })
+        }])
         .select()
         .single();
 
