@@ -22,27 +22,33 @@ const NewProduct = () => {
 
   const handleSubmit = async (productData: any) => {
     try {
-      const { error } = await supabase
+      // Insert new product instead of updating
+      const { data, error } = await supabase
         .from("products")
-        .insert({
+        .insert([{
           title: productData.title,
           description: productData.description,
           price: parseFloat(productData.price),
           category: productData.category,
-          image_url: productData.image_url,
-          meta_title: productData.meta_title,
-          meta_description: productData.meta_description,
-          meta_keywords: productData.meta_keywords,
-          canonical_url: productData.canonical_url,
-        });
+          image_url: productData.image_url || null,
+          meta_title: productData.meta_title || null,
+          meta_description: productData.meta_description || null,
+          meta_keywords: productData.meta_keywords || null,
+          canonical_url: productData.canonical_url || null,
+        }])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating product:", error);
+        throw error;
+      }
 
       toast({
         title: "Success",
         description: "Product created successfully",
       });
-      navigate("/admin");
+      navigate("/admin/products");
     } catch (error: any) {
       toast({
         title: "Error",
