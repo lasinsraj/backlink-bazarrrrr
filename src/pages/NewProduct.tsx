@@ -41,7 +41,7 @@ const NewProduct = () => {
         throw new Error('Invalid price value');
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("products")
         .insert({
           title: productData.title,
@@ -54,7 +54,8 @@ const NewProduct = () => {
           meta_keywords: productData.meta_keywords || null,
           canonical_url: productData.canonical_url || generateCanonicalUrl(productData.title || ''),
         })
-        .select();
+        .select('*')
+        .single();
 
       if (error) {
         console.error("Error creating product:", error);
