@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import EditProductForm from "@/components/admin/EditProductForm";
 import type { Product } from "@/types";
 
@@ -32,12 +32,14 @@ const NewProduct = () => {
 
   const handleSubmit = async (productData: Partial<Product>) => {
     try {
-      const canonicalUrl = productData.canonical_url || generateCanonicalUrl(productData.title || '');
-      
       // Ensure price is a number
       const price = typeof productData.price === 'string' 
         ? parseFloat(productData.price)
         : productData.price;
+
+      if (isNaN(price)) {
+        throw new Error('Invalid price value');
+      }
 
       const { data, error } = await supabase
         .from("products")
@@ -50,9 +52,9 @@ const NewProduct = () => {
           meta_title: productData.meta_title || null,
           meta_description: productData.meta_description || null,
           meta_keywords: productData.meta_keywords || null,
-          canonical_url: canonicalUrl,
+          canonical_url: productData.canonical_url || generateCanonicalUrl(productData.title || ''),
         })
-        .select('*')
+        .select()
         .single();
 
       if (error) {
