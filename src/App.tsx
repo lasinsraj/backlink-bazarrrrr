@@ -15,8 +15,8 @@ import EditProduct from "@/pages/EditProduct";
 import Payment from "@/pages/Payment";
 import Checkout from "@/pages/Checkout";
 import { Toaster } from "@/components/ui/toaster";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 function App() {
   return (
