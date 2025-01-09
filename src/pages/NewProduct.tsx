@@ -43,7 +43,7 @@ const NewProduct = () => {
 
       const { error } = await supabase
         .from("products")
-        .insert({
+        .insert([{
           title: productData.title,
           description: productData.description || null,
           price: price,
@@ -53,7 +53,7 @@ const NewProduct = () => {
           meta_description: productData.meta_description || null,
           meta_keywords: productData.meta_keywords || null,
           canonical_url: productData.canonical_url || generateCanonicalUrl(productData.title || ''),
-        });
+        }]);
 
       if (error) {
         console.error("Error creating product:", error);
