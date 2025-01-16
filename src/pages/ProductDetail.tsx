@@ -10,77 +10,51 @@ import ProductReviews from "@/components/product/ProductReviews";
 import ProductChat from "@/components/product/ProductChat";
 
 const ProductDetail = () => {
-  const { slug } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { session } = useSessionContext();
 
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
-
-  const { data: product, isLoading: productLoading } = useQuery({
-    queryKey: ["product", slug],
+  const { data: product, isLoading } = useQuery({
+    queryKey: ["product", id],
     queryFn: async () => {
-      if (!slug) {
-        navigate('/404', { replace: true });
+      if (!id) {
+        navigate('/shop');
         return null;
       }
 
-      // First try to find by title slug
-      const { data: products, error: slugError } = await supabase
+      const { data, error } = await supabase
         .from("products")
-        .select("*");
+        .select("*")
+        .eq('id', id)
+        .maybeSingle();
 
-      if (slugError) {
-        console.error('Error fetching products:', slugError);
-        throw slugError;
+      if (error) {
+        console.error('Error fetching product:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load product details",
+          variant: "destructive",
+        });
+        throw error;
       }
 
-      const productBySlug = products?.find(p => generateSlug(p.title) === slug);
-
-      if (productBySlug) {
-        return productBySlug;
+      if (!data) {
+        toast({
+          title: "Product not found",
+          description: "The requested product could not be found.",
+          variant: "destructive",
+        });
+        navigate('/shop');
+        return null;
       }
 
-      // If not found by slug, try to find by ID
-      try {
-        const { data: productById, error: idError } = await supabase
-          .from("products")
-          .select("*")
-          .eq('id', slug)
-          .maybeSingle();
-
-        if (idError) throw idError;
-
-        if (productById) {
-          // Redirect to the slug URL if found by ID
-          const titleSlug = generateSlug(productById.title);
-          navigate(`/product/${titleSlug}`, { replace: true });
-          return productById;
-        }
-      } catch (err) {
-        console.error('UUID lookup failed:', err);
-      }
-
-      toast({
-        title: "Product not found",
-        description: "The requested product could not be found.",
-        variant: "destructive",
-      });
-      navigate('/404', { replace: true });
-      return null;
+      return data;
     },
     retry: false
   });
 
-  if (productLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -94,31 +68,19 @@ const ProductDetail = () => {
 
   const defaultImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80";
   const baseUrl = "https://backlinkbazaar.online";
-  const productUrl = `${baseUrl}/product/${generateSlug(product.title)}`;
+  const productUrl = `${baseUrl}/product/${product.id}`;
 
   return (
     <>
       <Helmet>
         <title>{`${product.title} - Premium Backlinks | Backlink Bazaar`}</title>
         <meta name="description" content={product.description || `Get high-quality backlinks with our ${product.title}. Boost your website's SEO with verified domains and premium guest posts.`} />
-        
-        {/* Open Graph / Facebook */}
         <meta property="og:type" content="product" />
         <meta property="og:title" content={`${product.title} - Premium Backlinks | Backlink Bazaar`} />
         <meta property="og:description" content={product.description || `Get high-quality backlinks with our ${product.title}. Boost your website's SEO with verified domains and premium guest posts.`} />
         <meta property="og:image" content={product.image_url || defaultImage} />
         <meta property="og:url" content={productUrl} />
-        
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${product.title} - Premium Backlinks | Backlink Bazaar`} />
-        <meta name="twitter:description" content={product.description || `Get high-quality backlinks with our ${product.title}. Boost your website's SEO with verified domains and premium guest posts.`} />
-        <meta name="twitter:image" content={product.image_url || defaultImage} />
-        
-        {/* Additional SEO tags */}
         <link rel="canonical" href={productUrl} />
-        <meta name="keywords" content={`backlinks, SEO, ${product.title}, guest posts, link building, domain authority, website ranking`} />
-        <meta name="robots" content="index, follow" />
       </Helmet>
 
       <div className="min-h-screen bg-gray-50">

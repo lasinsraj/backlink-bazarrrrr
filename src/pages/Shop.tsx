@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, ShoppingBag } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 interface Product {
   id: string;
@@ -15,34 +16,41 @@ interface Product {
 }
 
 const Shop = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
+  const { data: products, isLoading, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setProducts(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      if (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+      }
+
+      return data || [];
     }
-  };
+  });
+
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to load products. Please try again.",
+      variant: "destructive",
+    });
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   const generateSlug = (title: string) => {
     return title
@@ -54,14 +62,6 @@ const Shop = () => {
       .replace(/^-+|-+$/g, '');
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="container py-8">
       <div className="flex items-center justify-between mb-8">
@@ -72,7 +72,7 @@ const Shop = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
+        {products?.map((product) => (
           <div
             key={product.id}
             className="bg-card rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
@@ -94,7 +94,7 @@ const Shop = () => {
                   ${product.price.toFixed(2)}
                 </span>
                 <Button
-                  onClick={() => navigate(`/product/${generateSlug(product.title)}`)}
+                  onClick={() => navigate(`/product/${product.id}`)}
                 >
                   View Details
                 </Button>
@@ -104,7 +104,7 @@ const Shop = () => {
         ))}
       </div>
 
-      {products.length === 0 && (
+      {products?.length === 0 && (
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold mb-2">No products found</h2>
           <p className="text-muted-foreground">
