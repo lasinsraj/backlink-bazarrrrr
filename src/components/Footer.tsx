@@ -35,7 +35,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-slate-400">
-              <li>Email: contact@backlinkbazaar.com</li>
+              <li>Email: contact@backlinkbazaar.online</li>
               <li>Support Hours: 24/7</li>
             </ul>
           </div>

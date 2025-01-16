@@ -43,7 +43,7 @@ const Contact = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="font-medium mb-2">Email</p>
-              <p className="text-slate-600">contact@backlinkbazaar.com</p>
+              <p className="text-slate-600">contact@backlinkbazaar.online</p>
             </div>
             <div>
               <p className="font-medium mb-2">Location</p>
