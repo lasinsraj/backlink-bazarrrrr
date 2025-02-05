@@ -7,6 +7,8 @@ interface SEOProps {
   keywords?: string;
   image?: string;
   noindex?: boolean;
+  type?: string;
+  hasContent?: boolean;
 }
 
 const SEO = ({ 
@@ -14,10 +16,15 @@ const SEO = ({
   description = "Find high-quality backlinks from verified domains. Boost your website's SEO with our curated marketplace of premium backlinks, guest posts, and more.",
   keywords = "backlinks, SEO, digital marketing, guest posts, link building, domain authority, website ranking, search engine optimization, quality backlinks, DA PA metrics",
   image = "/og-image.svg",
-  noindex = false
+  noindex = false,
+  type = "website",
+  hasContent = true
 }: SEOProps) => {
   const location = useLocation();
   const canonicalUrl = `https://backlinkbazaar.online${location.pathname}`;
+
+  // If page has no content, set noindex to true
+  const shouldIndex = hasContent && !noindex;
 
   return (
     <Helmet>
@@ -25,13 +32,13 @@ const SEO = ({
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       
-      {noindex && <meta name="robots" content="noindex,nofollow" />}
-      {!noindex && <meta name="robots" content="index, follow" />}
+      {!shouldIndex && <meta name="robots" content="noindex,nofollow" />}
+      {shouldIndex && <meta name="robots" content="index,follow" />}
       
       <link rel="canonical" href={canonicalUrl} />
       
       {/* Open Graph / Facebook */}
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={type} />
       <meta property="og:url" content={canonicalUrl} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
@@ -54,15 +61,18 @@ const SEO = ({
       <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "Organization",
-          "name": "Backlink Bazaar",
+          "@type": type,
+          "name": title,
           "description": description,
           "url": canonicalUrl,
-          "logo": "/og-image.svg",
-          "contactPoint": {
-            "@type": "ContactPoint",
-            "email": "contact@backlinkbazaar.online",
-            "contactType": "customer service"
+          "image": image,
+          "publisher": {
+            "@type": "Organization",
+            "name": "Backlink Bazaar",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "/og-image.svg"
+            }
           }
         })}
       </script>

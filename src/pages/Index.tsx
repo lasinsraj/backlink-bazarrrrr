@@ -13,54 +13,62 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO />
-      <Hero />
-      <FeaturedProducts />
-      <Stats />
-      <Features />
+      <SEO 
+        title="Backlink Bazaar - Premium Quality Backlinks Marketplace"
+        description="Find high-quality backlinks from verified domains. Boost your website's SEO with our curated marketplace of premium backlinks, guest posts, and more. Improve your search rankings with our trusted link building services."
+        type="website"
+        hasContent={true}
+      />
       
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-app text-white">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="container mx-auto px-4 text-center"
-        >
-          <motion.h2 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-4xl font-bold mb-6"
-          >
-            Ready to Boost Your SEO?
-          </motion.h2>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="text-xl mb-8 max-w-2xl mx-auto"
-          >
-            Join thousands of satisfied customers who have improved their search rankings with our premium backlinks.
-          </motion.p>
-          
-          <motion.div
+      <article className="prose prose-lg max-w-none">
+        <Hero />
+        <FeaturedProducts />
+        <Stats />
+        <Features />
+        
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-app text-white">
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            transition={{ duration: 0.5 }}
+            className="container mx-auto px-4 text-center"
           >
-            <Button 
-              onClick={() => navigate('/shop')}
-              size="lg"
-              variant="secondary"
-              className="text-lg px-8 py-6 hover:scale-105 transition-transform duration-300"
+            <motion.h2 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-4xl font-bold mb-6"
             >
-              Browse All Products <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+              Ready to Boost Your SEO?
+            </motion.h2>
+            
+            <motion.p 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="text-xl mb-8 max-w-2xl mx-auto"
+            >
+              Join thousands of satisfied customers who have improved their search rankings with our premium backlinks. Our marketplace offers high-quality, relevant backlinks from trusted domains.
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              <Button 
+                onClick={() => navigate('/shop')}
+                size="lg"
+                variant="secondary"
+                className="text-lg px-8 py-6 hover:scale-105 transition-transform duration-300"
+              >
+                Browse All Products <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </section>
+        </section>
+      </article>
     </div>
   );
 };
